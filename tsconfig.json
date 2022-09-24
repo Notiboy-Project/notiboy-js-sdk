@@ -1,11 +1,18 @@
 {
   "compilerOptions": {
-   "module": "commonjs",
-   "target": "es2015",
+   "strict": true,
+   "module": "ES6",
+   "target": "ES6",
    "sourceMap": true,
    "outDir": "./dist",
    "noImplicitAny": true,
    "declaration": true,
+   "lib": ["DOM", "ES6", "DOM.Iterable", "ScriptHost", "ES2016.Array.Include", "ES2021"],
+   "esModuleInterop": true,
+   "typeRoots": ["node_modules/@types"],
+   "emitDeclarationOnly": false,
+   "allowJs": true,
+   "moduleResolution": "node",
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]
