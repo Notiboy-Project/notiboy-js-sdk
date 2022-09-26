@@ -16,7 +16,7 @@ describe("Testing notiboy functions", function() {
         assert.isNotNull(txns, "Not creating logic sig")
     })
     
-    it("Prepares optin transactions", async function() {
+    it("Prepares optin transactions for channel creator", async function() {
         const txns = await sdk.optin('dapp1', 'HZ57J3K46JIJXILONBBZOHX6BKPXEM2VVXNRFSUED6DKFD5ZD24PMJ3MVA','AD5J43O3N6UPEUFYOZHT6WBUXDOK66MMGL3JHQV77Y2EAEZJVLRCINWYBI','dapp');
         assert.equal(txns.length, 2, "Not returning two transactions");
         assert.isNotNull(txns[0].group, "Not grouping the two transaction");
@@ -45,7 +45,7 @@ describe("Testing notiboy functions", function() {
     });
 
     it("Prepares optin transactions for user (Personal Notification)", async function() {
-        const txns = await sdk.optin('','AD5J43O3N6UPEUFYOZHT6WBUXDOK66MMGL3JHQV77Y2EAEZJVLRCINWYBI','','user');
+        const txns = await sdk.optin('','AD5J43O3N6UPEUFYOZHT6WBUXDOK66MMGL3JHQV77Y2EAEZJVLRCINWYBI','AD5J43O3N6UPEUFYOZHT6WBUXDOK66MMGL3JHQV77Y2EAEZJVLRCINWYBI','user');
         assert.equal(txns.length, 2, "Not returning two transactions");
         assert.isNotNull(txns[0].group, "Not grouping the two transaction");
     });

@@ -4,17 +4,18 @@
   "description": "JS SDK for Notiboy Notifications",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "repository": "git@github.com:Notiboy-Project/notiboy-js-sdk.git",
   "author": "Notiboy",
-  "license": "MIT",
+  "license": "GPL-3.0 license",
   "files": [
     "/dist"
   ],
   "scripts": {
-    "test": "mocha tests/test.js",
+    "test": "tsc tests/test.ts & mocha tests/test.js",
     "format": "prettier --write src/.",
     "build": "npx tsc"
   },
-  "keywords": [],
+  "keywords": ["Notiboy", "Algorand"],
   "dependencies": {
     "algosdk": "^1.19.1",
     "hi-base32": "^0.5.1",

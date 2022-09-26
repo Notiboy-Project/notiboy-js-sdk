@@ -20,7 +20,7 @@ const notiBoy = new sdk(client, indexer);
 To build a new version of the library, run:
 
 ```
-npm run build
+npm build
 ```
 
 #### Node.js
