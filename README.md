@@ -3,7 +3,6 @@
 
 ## Installation
 ### [Node.js](https://nodejs.org/en/download/)
-
 ```
 npm install notiboy-js-sdk
 ```
@@ -20,16 +19,13 @@ const notiBoy = new sdk(client, indexer);
 To build a new version of the library, run:
 
 ```
-npm build
+npm run build
 ```
-
 #### Node.js
 
 To run the mocha tests in Node.js, run:
-
 ```
-npm test
+npm run test
 ```
 ## License
-
 notiboy-js-sdk is licensed under an GNU General Public License v3.0. See the [LICENSE](https://github.com/Notiboy-Project/notiboy-js-sdk/blob/main/LICENSE) file for details.
