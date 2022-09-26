@@ -32,4 +32,4 @@ npm test
 ```
 ## License
 
-js-algorand-sdk is licensed under an MIT license. See the [LICENSE](https://github.com/Notiboy-Project/notiboy-js-sdk/blob/main/LICENSE) file for details.
+notiboy-js-sdk is licensed under an GNU General Public License v3.0. See the [LICENSE](https://github.com/Notiboy-Project/notiboy-js-sdk/blob/main/LICENSE) file for details.
