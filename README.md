@@ -8,12 +8,12 @@
 npm install notiboy-js-sdk
 ```
 ## Quick Start
-
+```javascript
 import sdk from "notiboy-js-sdk";
 const client = new algosdk.Algodv2(token, server, port);
 const indexer = new algosdk.Indexer(token, server, port);
 const notiBoy = new sdk(client, indexer);
-
+```
 ## SDK Development
 ### Building
 
