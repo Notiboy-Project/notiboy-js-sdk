@@ -6,7 +6,7 @@
   "types": "dist/index.d.ts",
   "repository": "git@github.com:Notiboy-Project/notiboy-js-sdk.git",
   "author": "Notiboy",
-  "license": "GPL-3.0 license",
+  "license": "MIT",
   "files": [
     "/dist"
   ],
@@ -15,11 +15,13 @@
     "format": "prettier --write src/.",
     "build": "npx tsc"
   },
-  "keywords": ["Notiboy", "Algorand"],
+  "keywords": [
+    "Notiboy",
+    "Algorand"
+  ],
   "dependencies": {
     "algosdk": "^1.19.1",
-    "hi-base32": "^0.5.1",
-    "typescript": "^4.7.4"
+    "hi-base32": "^0.5.1"
   },
   "devDependencies": {
     "@types/chai": "^4.3.3",
@@ -27,6 +29,7 @@
     "@types/node": "^18.7.19",
     "chai": "^4.3.6",
     "mocha": "^10.0.0",
-    "prettier": "^2.7.1"
+    "prettier": "^2.7.1",
+    "typescript": "^4.7.4"
   }
 }
