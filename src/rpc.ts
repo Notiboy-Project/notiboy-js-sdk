@@ -2,16 +2,15 @@ import algosdk from "algosdk";
 import * as base32 from "hi-base32";
 
 export default class RPC {
-
   protected client: algosdk.Algodv2;
   protected indexer: algosdk.Indexer;
 
-  constructor(client:algosdk.Algodv2, indexer:algosdk.Indexer) {
+  constructor(client: algosdk.Algodv2, indexer: algosdk.Indexer) {
     this.client = client;
     this.indexer = indexer;
   }
 
-  convertToIntArray(arg:string):Uint8Array {
+  convertToIntArray(arg: string): Uint8Array {
     return new Uint8Array(Buffer.from(arg));
   }
 
@@ -69,7 +68,7 @@ export default class RPC {
 
   //Get channel details for private notifications
   getTransactionDetails(transactionDetails: Array<any>): Array<any> {
-    let channelDetails : Array<any> = [];
+    let channelDetails: Array<any> = [];
     for (let j = 0; j < transactionDetails.length; j++) {
       // converting key into array buffer
       const bufferKey = Buffer.from(transactionDetails[j].key, "base64");
