@@ -106,11 +106,21 @@ export default class SDK extends RPC {
         appInfo.application.params["global-state"][i].value.bytes,
         "base64"
       );
-      channelDetails.push({
-        channelName: key,
-        dappAddress: algosdk.encodeAddress(addressList.slice(0, 32)),
-        lsigAddress: algosdk.encodeAddress(addressList.slice(33)),
-      });
+      if(addressList.length === 67 && addressList.slice(66).toString("utf-8") == 'v'){
+        channelDetails.push({
+          channelName: key,
+          dappAddress: algosdk.encodeAddress(addressList.slice(0, 32)),
+          lsigAddress: algosdk.encodeAddress(addressList.slice(33,65)),
+          status: 'verified'
+        });
+      }else if(addressList.length === 65){
+        channelDetails.push({
+          channelName: key,
+          dappAddress: algosdk.encodeAddress(addressList.slice(0, 32)),
+          lsigAddress: algosdk.encodeAddress(addressList.slice(33,65)),
+          status: 'regular'
+        });
+      }
     }
     return channelDetails;
   }
@@ -118,5 +128,16 @@ export default class SDK extends RPC {
   //Get notifications from a channel
   notification() {
     return new Notification(this.client, this.indexer);
+  }
+
+  async getoptinState(address: string): Promise<Boolean>{
+    const accountInfo = await this.indexer.lookupAccountByID(address).do();
+    if(accountInfo['account']['apps-local-state'] == undefined) return false;
+    for(let i=0; i<accountInfo['account']['apps-local-state'].length; i++){
+      if(accountInfo['account']['apps-local-state'][i].id === APP_INDEX){
+        return true;
+      }
+    }
+    return false;
   }
 }

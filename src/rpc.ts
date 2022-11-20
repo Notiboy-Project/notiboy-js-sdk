@@ -67,7 +67,7 @@ export default class RPC {
     return transactionIds;
   }
 
-  //Get channel details for private notifications
+  //Get channel details for personal notifications
   getTransactionDetails(transactionDetails: Array<any>): Array<any> {
     let channelDetails : Array<any> = [];
     for (let j = 0; j < transactionDetails.length; j++) {

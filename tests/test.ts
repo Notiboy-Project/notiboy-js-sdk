@@ -61,5 +61,10 @@ describe("Testing notiboy functions", function() {
         const notifications = await sdk.notification().getPersonalNotification('74R7OIQ5SZZBSPDDICD4Y2HF3HOD5ZMDPXKYEHLMAVIUSBLPYRNP2G2YPY');
         assert.isNotNull(notifications, "The local state is not fetched proporly. Either there is no notifications or notifications not fetched properly.")
     });
+
+    it("Prepares checks optin state of address", async function() {
+        const optinState = await sdk.getoptinState('HL65SEX7ERMP25UJQ4JZ6MNRCDSBILTVFDGZJXL4HYT4VUCXPJ2RQBJLMI');
+        assert.isNotNull(optinState, "Optin state not properly fetched.")
+    });
     
 });
