@@ -28,7 +28,7 @@ To run the mocha tests in Node.js, run:
 npm run test
 ```
 #### Example
-The example implementation of this SDK can seen in this vue.js [WebApp]https://github.com/Notiboy-Project/notiboy-webapp/tree/main/src/store
+The example implementation of this SDK can seen in this vue.js [WebApp](https://github.com/Notiboy-Project/notiboy-webapp/tree/main/src/store)
 
 ## License
 notiboy-js-sdk is licensed under an MIT License. See the [LICENSE](https://github.com/Notiboy-Project/notiboy-js-sdk/blob/main/LICENSE) file for details.
