@@ -16,7 +16,7 @@ export default class Notification extends RPC {
   async sendPublicNotification(
     address: string,
     lsig: string,
-    dappName:string,
+    dappName: string,
     notification: string
   ): Promise<algosdk.Transaction[]> {
     const note = this.encodeString(notification);
@@ -123,7 +123,9 @@ export default class Notification extends RPC {
   }
 
   // Get Personal notifications
-  async getPersonalNotification(userAddress: string): Promise<PersonalNotification[]> {
+  async getPersonalNotification(
+    userAddress: string
+  ): Promise<PersonalNotification[]> {
     try {
       const localState = await this.indexer
         .lookupAccountAppLocalStates(userAddress)
