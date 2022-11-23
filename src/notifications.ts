@@ -132,12 +132,12 @@ export default class Notification extends RPC {
       if (localState["apps-local-states"] == undefined) return [];
       const channelDetails = localState["apps-local-states"][0]["key-value"];
       const transactionIds = this.getTransactionDetails(channelDetails);
-      const notifications = [];
+      let notifications = [];
       for (let i = 0; i < transactionIds.length; i++) {
-        const txnId = transactionIds[i].decodedValue;
+        const txnId = transactionIds[i].decodedTxid;
         const txnInfo = await this.indexer.lookupTransactionByID(txnId).do();
         const notification = {
-          channel: transactionIds[i].finalKey,
+          channel: transactionIds[i].decodedAppName,
           notification: this.decodeNote(txnInfo.transaction.note),
           timeStamp: txnInfo.transaction["round-time"],
         };

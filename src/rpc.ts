@@ -73,18 +73,19 @@ export default class RPC {
     for (let j = 0; j < transactionDetails.length; j++) {
       // converting key into array buffer
       const bufferKey = Buffer.from(transactionDetails[j].key, "base64");
-      const finalKey = bufferKey.toString("utf-8");
-      // Decoding the value into string and removing "===="
-      let value = transactionDetails[j].value.bytes;
-      let decodedValue = this.base32EncodeArrayBuffer(value);
-      for (let i = decodedValue.length - 1; i >= 0; i--) {
-        if (decodedValue[i] == "=") {
-          decodedValue = decodedValue.slice(0, -1);
+      // checking for "index" string to keep it as is
+      const convertToString = bufferKey.toString("utf-8");
+      if (convertToString === "index") continue;
+      const decodedAppName = Buffer.from(transactionDetails[j].value.bytes, "base64").slice(32).toString();
+      let decodedTxid = this.base32EncodeArrayBuffer(transactionDetails[j].value.bytes.slice(0,43));
+      for (let i =  decodedTxid.length - 1; i >= 0; i--) {
+        if ( decodedTxid[i] == "=") {
+           decodedTxid =  decodedTxid.slice(0, -1);
         } else {
           channelDetails.push({
-            finalKey,
-            decodedValue,
-          });
+            decodedTxid,
+            decodedAppName,
+          })
           break;
         }
       }

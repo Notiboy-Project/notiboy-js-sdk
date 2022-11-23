@@ -40,8 +40,8 @@ describe("Testing notiboy functions", function() {
 
     it("Prepares receiving Public Notifications", async function() {
         this.timeout(5000);
-        const  notifications = await sdk.notification().getPublicNotification('5OQOYHJ6BYPWFBUTFTN4JA5GJEAJUNA2P65DPNTN5OUGSFFO47NHRZR6HU');
-        assert.isNotNull(notifications, "The local state is not fetched proporly. Either there is no notifications or notifications not fetched properly.")
+        const  notifications = await sdk.notification().getPublicNotification('DXQ3Z5OGU4ABXDM6U5POOQK4QQ7RRP4GJ6QPN5USLZ7YTE2HQASE2VQUTM');
+        assert.isArray(notifications, "The local state is not fetched proporly. Either there is no notifications or notifications not fetched properly.")
     });
 
     it("Prepares optin transactions for user (Personal Notification)", async function() {
@@ -58,8 +58,8 @@ describe("Testing notiboy functions", function() {
 
     it("Prepares receiving personal notification", async function() {
         this.timeout(5000);
-        const notifications = await sdk.notification().getPersonalNotification('74R7OIQ5SZZBSPDDICD4Y2HF3HOD5ZMDPXKYEHLMAVIUSBLPYRNP2G2YPY');
-        assert.isNotNull(notifications, "The local state is not fetched proporly. Either there is no notifications or notifications not fetched properly.")
+        const notifications = await sdk.notification().getPersonalNotification('ZTOZYNDWQDTM2TDIWEMK6WLLC5Z5GVMK3ZV2W7J7XL6O4PZRWDTKES2IJM');
+        assert.isArray(notifications, "The local state is not fetched proporly. Either there is no notifications or notifications not fetched properly.")
     });
 
     it("Prepares checks optin state of address", async function() {
