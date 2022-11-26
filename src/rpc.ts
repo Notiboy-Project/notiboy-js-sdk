@@ -1,3 +1,4 @@
+//Defined basic RPC methods
 import algosdk from "algosdk";
 import * as base32 from "hi-base32";
 

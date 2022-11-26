@@ -1,3 +1,4 @@
+//Defined basic methods related to channels
 import algosdk from "algosdk";
 import {
   // APP_ARG_FOR_DAPP,

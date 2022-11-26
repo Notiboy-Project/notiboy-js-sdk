@@ -1,3 +1,4 @@
+//Defined the methods for notifications
 import algosdk from "algosdk";
 import RPC from "./rpc";
 

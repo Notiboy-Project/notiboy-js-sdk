@@ -1,3 +1,4 @@
+//Interfaces defined
 export interface PublicChannel {
   channelName: string;
   dappAddress: string;

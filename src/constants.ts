@@ -1,3 +1,4 @@
+//Constants for the sdk
 export const OPTIN_FEE = 1000000;
 export const APP_ARG_FOR_DAPP = "dapp";
 export const DAPP_ESCROW =
