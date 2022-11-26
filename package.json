@@ -1,6 +1,6 @@
 {
   "name": "notiboy-js-sdk",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "JS SDK for Notiboy Notifications",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
