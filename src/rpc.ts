@@ -38,7 +38,7 @@ export default class RPC {
   }
   //Get transaction ids for the list of notifications
   getTransactionIds(transactionDetails: Array<any>): Array<string> {
-    let transactionIds: string[] = [];
+    const transactionIds: string[] = [];
     for (let j = 0; j < transactionDetails.length; j++) {
       // converting key into array buffer
       const bufferKey = Buffer.from(transactionDetails[j].key, "base64");
@@ -53,7 +53,7 @@ export default class RPC {
         finalKey = algosdk.decodeUint64(bufferKey, "mixed");
       }
       // Decoding the value into string and removing "===="
-      let value = transactionDetails[j].value.bytes;
+      const value = transactionDetails[j].value.bytes;
       let decodedValue = this.base32EncodeArrayBuffer(value);
       for (let i = decodedValue.length - 1; i >= 0; i--) {
         if (decodedValue[i] == "=") {
@@ -69,7 +69,7 @@ export default class RPC {
 
   //Get channel details for personal notifications
   getTransactionDetails(transactionDetails: Array<any>): Array<any> {
-    let channelDetails: Array<any> = [];
+    const channelDetails: Array<any> = [];
     for (let j = 0; j < transactionDetails.length; j++) {
       // converting key into array buffer
       const bufferKey = Buffer.from(transactionDetails[j].key, "base64");

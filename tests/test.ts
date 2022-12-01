@@ -98,7 +98,7 @@ describe("Testing notiboy functions", function () {
     const notifications = await sdk
       .notification()
       .getPersonalNotification(
-        "AD5J43O3N6UPEUFYOZHT6WBUXDOK66MMGL3JHQV77Y2EAEZJVLRCINWYBI"
+        "P7U6A5G7CQXFJPH3S576ZPCFCY5XPUP5RHR577S5NTNN3LR2WURHAK3SUE"
       );
     assert.isArray(
       notifications,

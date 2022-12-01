@@ -92,7 +92,7 @@ export default class SDK extends RPC {
   // Get list of public channels
   async listPublicChannels(): Promise<any[]> {
     const appInfo = await this.indexer.lookupApplications(APP_INDEX).do();
-    let channelDetails = [];
+    const channelDetails = [];
     for (
       let i = 0;
       i < appInfo.application.params["global-state"].length;
@@ -134,7 +134,7 @@ export default class SDK extends RPC {
     return new Notification(this.client, this.indexer);
   }
 
-  async getoptinState(address: string): Promise<Boolean> {
+  async getoptinState(address: string): Promise<boolean> {
     const accountInfo = await this.indexer.lookupAccountByID(address).do();
     if (accountInfo["account"]["apps-local-state"] == undefined) return false;
     for (

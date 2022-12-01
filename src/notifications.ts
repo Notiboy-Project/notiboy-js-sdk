@@ -21,7 +21,7 @@ export default class Notification extends RPC {
     notification: string
   ): Promise<algosdk.Transaction[]> {
     const note = this.encodeString(notification);
-    let appArgs = [this.encodeString(APP_ARG_PUB), this.encodeString(dappName)];
+    const appArgs = [this.encodeString(APP_ARG_PUB), this.encodeString(dappName)];
 
     const params = await this.client.getTransactionParams().do();
     params.fee = 2000;
@@ -88,10 +88,10 @@ export default class Notification extends RPC {
     notification: string
   ): Promise<algosdk.Transaction[]> {
     const note = this.encodeString(notification);
-    let appArgs = [];
+    const appArgs = [];
     appArgs.push(this.encodeString(APP_ARG_PVT));
     appArgs.push(this.encodeString(channelName));
-    let accounts = [];
+    const accounts = [];
     accounts.push(userAddress);
     const params = await this.client.getTransactionParams().do();
     params.fee = 2000;
@@ -135,7 +135,7 @@ export default class Notification extends RPC {
       if (localState["apps-local-states"] == undefined) return [];
       const channelDetails = localState["apps-local-states"][0]["key-value"];
       const transactionIds = this.getTransactionDetails(channelDetails);
-      let notifications = [];
+      const notifications = [];
       for (let i = 0; i < transactionIds.length; i++) {
         const txnId = transactionIds[i].decodedTxid;
         const txnInfo = await this.indexer.lookupTransactionByID(txnId).do();
@@ -146,6 +146,9 @@ export default class Notification extends RPC {
         };
         notifications.unshift(notification);
       }
+      notifications.sort(function(a, b) {
+        return b.timeStamp - a.timeStamp;
+      });
       return notifications;
     } catch (error) {
       return [];
