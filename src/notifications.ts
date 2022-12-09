@@ -146,10 +146,6 @@ export default class Notification extends RPC {
         };
         notifications.unshift(notification);
       }
-      //Sorting according to time stamp
-      notifications.sort(function(a, b) {
-        return b.timeStamp - a.timeStamp;
-      });
       return notifications;
     } catch (error) {
       return [];
