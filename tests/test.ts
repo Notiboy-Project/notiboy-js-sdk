@@ -112,4 +112,10 @@ describe("Testing notiboy functions", function () {
     );
     assert.isNotNull(optinState, "Optin state not properly fetched.");
   });
+
+  it("Prepares testing", async function () {
+    const appId = 144113274;
+    const accountInfo = await indexer.searchAccounts().applicationID(appId).do();
+    console.log(accountInfo);
+  });
 });

@@ -21,7 +21,7 @@
     "Algorand"
   ],
   "dependencies": {
-    "algosdk": "^1.19.1",
+    "algosdk": "^1.24.1",
     "hi-base32": "^0.5.1"
   },
   "devDependencies": {

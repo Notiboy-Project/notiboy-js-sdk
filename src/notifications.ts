@@ -21,7 +21,10 @@ export default class Notification extends RPC {
     notification: string
   ): Promise<algosdk.Transaction[]> {
     const note = this.encodeString(notification);
-    const appArgs = [this.encodeString(APP_ARG_PUB), this.encodeString(dappName)];
+    const appArgs = [
+      this.encodeString(APP_ARG_PUB),
+      this.encodeString(dappName),
+    ];
 
     const params = await this.client.getTransactionParams().do();
     params.fee = 2000;

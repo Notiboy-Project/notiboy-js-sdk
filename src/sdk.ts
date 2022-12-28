@@ -4,91 +4,183 @@ import {
   // APP_ARG_FOR_DAPP,
   APP_INDEX,
   DAPP_ESCROW,
-  OPTIN_FEE,
+  CREATION_FEE,
+  LOCAL_INTS,
+  GLOBAL_INTS,
+  LOCAL_BYTES,
+  GLOBAL_BYTES,
+  APP_ARG_NULL,
+  MAIN_BOX,
+  CHANNEL_NOOP_TXNS,
 } from "./constants";
 import RPC from "./rpc";
 import Notification from "./notifications";
-import LsigTeal from "./lsig";
+import Channel from "./channel";
 
 export default class SDK extends RPC {
   isValidAddress(address: string): boolean {
     return algosdk.isValidAddress(address);
   }
 
-  //Creating a logic sig for channel
-  async createLogicSig(channelName: string): Promise<algosdk.LogicSigAccount> {
-    const teal = LsigTeal(channelName);
-    const results = await this.client.compile(teal).do();
-    const program = new Uint8Array(Buffer.from(results.result, "base64"));
-    return new algosdk.LogicSigAccount(program);
-  }
-
-  // Funding logicsig with minimum balance of 1 algo
-  async provideBasicLsigBalance(
-    address: string,
-    lsig: string
-  ): Promise<algosdk.Transaction> {
-    const params = await this.client.getTransactionParams().do();
-    return algosdk.makePaymentTxnWithSuggestedParams(
-      address,
-      lsig,
-      OPTIN_FEE,
-      undefined,
-      undefined,
-      params,
-      undefined
+  //Channel Creation
+  async deploySc(address: string): Promise<algosdk.Transaction> {
+    //Reading teal code
+    const tealProgram = Channel();
+    const programBytes = this.convertToIntArray(tealProgram);
+    const compiledTeal = await this.client.compile(programBytes).do();
+    const compiledBytes = new Uint8Array(
+      Buffer.from(compiledTeal.result, "base64")
     );
+
+    //Fetching prameters
+    const onComplete = algosdk.OnApplicationComplete.NoOpOC;
+    const params = await this.client.getTransactionParams().do();
+
+    //Return the transaction for signing
+    return algosdk.makeApplicationCreateTxnFromObject({
+      onComplete: onComplete,
+      from: address,
+      suggestedParams: params,
+      approvalProgram: compiledBytes,
+      clearProgram: compiledBytes,
+      numLocalInts: LOCAL_INTS,
+      numLocalByteSlices: LOCAL_BYTES,
+      numGlobalInts: GLOBAL_INTS,
+      numGlobalByteSlices: GLOBAL_BYTES,
+      appArgs: APP_ARG_NULL,
+    });
   }
 
-  // Optin to SC for channel creation
-  async optin(
-    // name can be either dApp name or user
-    //optin address is the logic sig address
-    //address is the creator address
-    channelName: string,
-    optinAddress: string,
+  //Opt-in to Notiboy smart contract by creator address & and payment of one-time fee
+  async channelContractOptin(
     address: string,
-    appArg: string
-  ): Promise<algosdk.Transaction[]> {
-    //TODO: dapp name validations if necessary
-    if (!this.isValidAddress(address)) {
-      throw new Error("Invalid address");
-    }
-    let appArgs = [];
-    if (channelName == "") {
-      appArgs = [this.convertToIntArray(appArg)];
-    } else {
-      appArgs = [
-        this.convertToIntArray(appArg),
-        this.convertToIntArray(channelName),
-      ];
-    }
-    const params = await this.client.getTransactionParams().do();
-    params.fee = 2000;
+    creatorAppIndex: number,
+    channelName: string
+  ) {
+    const boxNameArray = this.convertToIntArray(MAIN_BOX);
+    const boxes = [
+      { appIndex: 0, name: boxNameArray },
+      { appIndex: 0, name: boxNameArray },
+      { appIndex: 0, name: boxNameArray },
+      { appIndex: 0, name: boxNameArray },
+      { appIndex: 0, name: boxNameArray },
+      { appIndex: 0, name: boxNameArray },
+      { appIndex: 0, name: boxNameArray },
+      { appIndex: 0, name: boxNameArray },
+    ];
+
+    const appArgs = [
+      this.convertToIntArray("dapp"),
+      this.convertToIntArray(channelName),
+    ];
+
+    let params = await this.client.getTransactionParams().do();
+    params.fee = 1000;
     params.flatFee = true;
-    const paymentTxn = algosdk.makePaymentTxnWithSuggestedParams(
-      address,
-      DAPP_ESCROW,
-      OPTIN_FEE,
-      undefined,
-      undefined,
-      params,
-      undefined
-    );
 
-    const optinTxn = algosdk.makeApplicationOptInTxn(
-      optinAddress,
+    //channel creation fee
+    const paymentTxn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+      from: address,
+      suggestedParams: params,
+      to: DAPP_ESCROW,
+      amount: CREATION_FEE,
+    });
+
+    //Optin
+    const optinTransaction = algosdk.makeApplicationOptInTxnFromObject({
+      from: address,
+      suggestedParams: params,
+      appIndex: APP_INDEX,
+      appArgs: appArgs,
+      foreignApps: [creatorAppIndex],
+      boxes: boxes,
+    });
+
+    //Noop Txns
+    const noopTxns = this.createNoopTransactions(
+      CHANNEL_NOOP_TXNS,
+      address,
       params,
       APP_INDEX,
-      appArgs
+      boxes,
+      []
     );
-    optinTxn.fee = 0;
-    const groupTxns = [paymentTxn, optinTxn];
-
+    //Group Transactions
+    const basicTxns = [paymentTxn, optinTransaction];
+    const groupTxns = basicTxns.concat(noopTxns);
     algosdk.assignGroupID(groupTxns);
-
     return groupTxns;
   }
+
+  //Channel Deletion (first we have to close-out and then delete the SC)
+  async contractDelete(
+    address: string,
+    creatorAppIndex: number
+  ): Promise<algosdk.Transaction> {
+    //Fetching prameters
+    const params = await this.client.getTransactionParams().do();
+
+    //Return the transaction for signing
+    return algosdk.makeApplicationDeleteTxnFromObject({
+      from: address,
+      appIndex: creatorAppIndex,
+      suggestedParams: params,
+    });
+  }
+
+  //Channel Opt-out from Notiboy contract
+  async channelContractOptout(
+    address: string,
+    creatorAppIndex: number,
+    channelName: string
+  ) {
+    const boxNameArray = this.convertToIntArray(MAIN_BOX);
+    const boxes = [
+      { appIndex: 0, name: boxNameArray },
+      { appIndex: 0, name: boxNameArray },
+      { appIndex: 0, name: boxNameArray },
+      { appIndex: 0, name: boxNameArray },
+      { appIndex: 0, name: boxNameArray },
+      { appIndex: 0, name: boxNameArray },
+      { appIndex: 0, name: boxNameArray },
+      { appIndex: 0, name: boxNameArray },
+    ];
+
+    const appArgs = [
+      this.convertToIntArray("dapp"),
+      this.convertToIntArray(channelName),
+    ];
+
+    let params = await this.client.getTransactionParams().do();
+    params.fee = 1000;
+    params.flatFee = true;
+
+    //closeOut
+    const closeOutTransaction = algosdk.makeApplicationCloseOutTxnFromObject({
+      from: address,
+      appIndex: creatorAppIndex,
+      suggestedParams: params,
+      foreignApps: [creatorAppIndex],
+      appArgs: appArgs,
+      boxes: boxes,
+    });
+
+    //Noop Txns
+    const noopTxns = this.createNoopTransactions(
+      CHANNEL_NOOP_TXNS,
+      address,
+      params,
+      APP_INDEX,
+      boxes,
+      []
+    );
+    //Group Transactions
+    const basicTxns = [closeOutTransaction];
+    const groupTxns = basicTxns.concat(noopTxns);
+    algosdk.assignGroupID(groupTxns);
+    return groupTxns;
+  }
+
   // Get list of public channels
   async listPublicChannels(): Promise<any[]> {
     const appInfo = await this.indexer.lookupApplications(APP_INDEX).do();

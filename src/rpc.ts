@@ -1,5 +1,5 @@
 //Defined basic RPC methods
-import algosdk from "algosdk";
+import algosdk, { Transaction } from "algosdk";
 import * as base32 from "hi-base32";
 
 export default class RPC {
@@ -36,6 +36,35 @@ export default class RPC {
   decodeNote(note: string) {
     return Buffer.from(note, "base64").toString("utf-8");
   }
+
+  //Create noop transactions
+  createNoopTransactions(
+    txns: number,
+    address: string,
+    params: algosdk.SuggestedParams,
+    appIndex: number,
+    boxes: {
+      appIndex: number;
+      name: Uint8Array;
+    }[],
+    foreignApps: Array<number>
+  ): Transaction[] {
+    let txnsArray = [];
+    for (let i = 0; i < txns; i++) {
+      txnsArray.push(
+        algosdk.makeApplicationNoOpTxnFromObject({
+          from: address,
+          suggestedParams: params,
+          appIndex: appIndex,
+          note: this.encodeString(`noop ${i}`),
+          boxes: boxes,
+          foreignApps: foreignApps,
+        })
+      );
+    }
+    return txnsArray;
+  }
+
   //Get transaction ids for the list of notifications
   getTransactionIds(transactionDetails: Array<any>): Array<string> {
     const transactionIds: string[] = [];
