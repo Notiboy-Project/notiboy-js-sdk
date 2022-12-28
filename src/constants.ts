@@ -16,3 +16,4 @@ export const APP_ARG_CHANNEL_CREATE = [];
 export const APP_ARG_NULL = [];
 export const ACC_ARG_NULL = [];
 export const CHANNEL_NOOP_TXNS = 4;
+export const USER_NOOP_TXNS = 1;

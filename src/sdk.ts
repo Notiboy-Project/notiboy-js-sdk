@@ -12,6 +12,7 @@ import {
   APP_ARG_NULL,
   MAIN_BOX,
   CHANNEL_NOOP_TXNS,
+  USER_NOOP_TXNS
 } from "./constants";
 import RPC from "./rpc";
 import Notification from "./notifications";
@@ -23,7 +24,7 @@ export default class SDK extends RPC {
   }
 
   //Channel Creation
-  async deploySc(address: string): Promise<algosdk.Transaction> {
+  async createChannel(address: string): Promise<algosdk.Transaction> {
     //Reading teal code
     const tealProgram = Channel();
     const programBytes = this.convertToIntArray(tealProgram);
@@ -56,7 +57,7 @@ export default class SDK extends RPC {
     address: string,
     creatorAppIndex: number,
     channelName: string
-  ) {
+  ): Promise<algosdk.Transaction[]> {
     const boxNameArray = this.convertToIntArray(MAIN_BOX);
     const boxes = [
       { appIndex: 0, name: boxNameArray },
@@ -74,7 +75,7 @@ export default class SDK extends RPC {
       this.convertToIntArray(channelName),
     ];
 
-    let params = await this.client.getTransactionParams().do();
+    const params = await this.client.getTransactionParams().do();
     params.fee = 1000;
     params.flatFee = true;
 
@@ -113,7 +114,7 @@ export default class SDK extends RPC {
   }
 
   //Channel Deletion (first we have to close-out and then delete the SC)
-  async contractDelete(
+  async channelDelete(
     address: string,
     creatorAppIndex: number
   ): Promise<algosdk.Transaction> {
@@ -133,7 +134,7 @@ export default class SDK extends RPC {
     address: string,
     creatorAppIndex: number,
     channelName: string
-  ) {
+  ): Promise<algosdk.Transaction[]> {
     const boxNameArray = this.convertToIntArray(MAIN_BOX);
     const boxes = [
       { appIndex: 0, name: boxNameArray },
@@ -151,7 +152,7 @@ export default class SDK extends RPC {
       this.convertToIntArray(channelName),
     ];
 
-    let params = await this.client.getTransactionParams().do();
+    const params = await this.client.getTransactionParams().do();
     params.fee = 1000;
     params.flatFee = true;
 
@@ -179,6 +180,88 @@ export default class SDK extends RPC {
     const groupTxns = basicTxns.concat(noopTxns);
     algosdk.assignGroupID(groupTxns);
     return groupTxns;
+  }
+
+  //User opt-in to Notiboy SC
+  async userContractOptin(
+    address: string
+  ): Promise<algosdk.Transaction[]> {
+    const boxNameArray = this.convertToIntArray(MAIN_BOX);
+    const boxes = [
+      { appIndex: 0, name: boxNameArray },
+      { appIndex: 0, name: boxNameArray },
+      { appIndex: 0, name: boxNameArray },
+      { appIndex: 0, name: boxNameArray },
+      { appIndex: 0, name: boxNameArray },
+      { appIndex: 0, name: boxNameArray },
+      { appIndex: 0, name: boxNameArray },
+      { appIndex: 0, name: boxNameArray },
+    ];
+
+    const appArgs = [
+      this.convertToIntArray("user")
+    ];
+
+    const params = await this.client.getTransactionParams().do();
+    params.fee = 1000;
+    params.flatFee = true;
+
+    //Optin
+    const optinTransaction = algosdk.makeApplicationOptInTxnFromObject({
+      from: address,
+      suggestedParams: params,
+      appIndex: APP_INDEX,
+      appArgs: appArgs,
+      foreignApps: [],
+      boxes: boxes,
+    });
+
+    //Noop Txns
+    const noopTxns = this.createNoopTransactions(
+      USER_NOOP_TXNS,
+      address,
+      params,
+      APP_INDEX,
+      boxes,
+      []
+    );
+    //Group Transactions
+    const basicTxns = [optinTransaction];
+    const groupTxns = basicTxns.concat(noopTxns);
+    algosdk.assignGroupID(groupTxns);
+    return groupTxns;
+  }
+
+  //User opt-in to a channel
+  async userChannelOptin(
+    address: string,
+    channelAppIndex: number,
+  ): Promise<algosdk.Transaction>{
+    const params = await this.client.getTransactionParams().do();
+    params.fee = 1000;
+    params.flatFee = true;
+    const optinTransaction = algosdk.makeApplicationOptInTxnFromObject({
+      from: address,
+      suggestedParams: params,
+      appIndex: channelAppIndex,
+    });
+    return optinTransaction;
+  }
+
+  //User Opt-out of channel
+  async userChannelOptout(
+    address: string,
+    channelAppIndex: number,
+  ): Promise<algosdk.Transaction>{
+    const params = await this.client.getTransactionParams().do();
+    params.fee = 1000;
+    params.flatFee = true;
+    const optOutTransaction = algosdk.makeApplicationCloseOutTxnFromObject({
+      from: address,
+      suggestedParams: params,
+      appIndex: channelAppIndex,
+    });
+    return optOutTransaction;
   }
 
   // Get list of public channels

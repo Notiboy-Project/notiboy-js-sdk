@@ -9,29 +9,38 @@ const indexer = new Indexer("", "https://testnet-idx.algonode.cloud", "");
 const sdk = new SDK(client, indexer);
 
 describe("Testing notiboy functions", function () {
-  it("Prepares creation of logic sig", async function () {
+  it("Prepares creation of channel", async function () {
     this.timeout(5000);
-    const txns = await sdk.createLogicSig("vcs");
-    assert.isNotNull(txns, "Not creating logic sig");
+    const txns = await sdk.createChannel("AD5J43O3N6UPEUFYOZHT6WBUXDOK66MMGL3JHQV77Y2EAEZJVLRCINWYBI");
+    assert.isNotNull(txns, "Channel not created");
   });
 
   it("Prepares optin transactions for channel creator", async function () {
-    const txns = await sdk.optin(
-      "dapp1",
+    const txns = await sdk.channelContractOptin(
       "HZ57J3K46JIJXILONBBZOHX6BKPXEM2VVXNRFSUED6DKFD5ZD24PMJ3MVA",
-      "AD5J43O3N6UPEUFYOZHT6WBUXDOK66MMGL3JHQV77Y2EAEZJVLRCINWYBI",
-      "dapp"
+      110,
+      "FunnyMeme"
     );
-    assert.equal(txns.length, 2, "Not returning two transactions");
+    assert.equal(txns.length, 5, "Not returning 5 transactions");
+    assert.isNotNull(txns[0].group, "Not grouping the  transaction");
+  });
+
+  it("Prepares optout for channel creator", async function () {
+    const txns = await sdk.channelContractOptout(
+      "AD5J43O3N6UPEUFYOZHT6WBUXDOK66MMGL3JHQV77Y2EAEZJVLRCINWYBI",
+      110,
+      "FunnyMeme"
+    );
+    assert.equal(txns.length, 5, "Not returning two transactions");
     assert.isNotNull(txns[0].group, "Not grouping the two transaction");
   });
 
-  it("Fund logic sig with minimum balance", async function () {
-    const txn = await sdk.provideBasicLsigBalance(
-      "2K3YHO443GBX2BTEF2B7R7ZXEUCNVE3GWETOTTVCV42SGSJ2TL5HLNG5DM",
-      "J754XZKT7PYJUE2HYTP4PXLZ5SNZ2MITOV3HOVBB3GGLFGA7H6QCSVE3U4"
+  it("Prepares destruction of channel SC", async function () {
+    const txns = await sdk. channelDelete(
+      "AD5J43O3N6UPEUFYOZHT6WBUXDOK66MMGL3JHQV77Y2EAEZJVLRCINWYBI",
+      110,
     );
-    assert.isNotNull(txn, "Not returning a transaction");
+    assert.isNotNull(txns, "Not destroying channel SC");
   });
 
   it("Prepares receiving list of public channels", async function () {
@@ -66,17 +75,6 @@ describe("Testing notiboy functions", function () {
       notifications,
       "The local state is not fetched proporly. Either there is no notifications or notifications not fetched properly."
     );
-  });
-
-  it("Prepares optin transactions for user (Personal Notification)", async function () {
-    const txns = await sdk.optin(
-      "",
-      "AD5J43O3N6UPEUFYOZHT6WBUXDOK66MMGL3JHQV77Y2EAEZJVLRCINWYBI",
-      "AD5J43O3N6UPEUFYOZHT6WBUXDOK66MMGL3JHQV77Y2EAEZJVLRCINWYBI",
-      "user"
-    );
-    assert.equal(txns.length, 2, "Not returning two transactions");
-    assert.isNotNull(txns[0].group, "Not grouping the two transaction");
   });
 
   it("Prepares sending personal notifications", async function () {
