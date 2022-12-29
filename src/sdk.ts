@@ -1,8 +1,7 @@
 //Defined basic methods related to channels
 import algosdk from "algosdk";
 import {
-  // APP_ARG_FOR_DAPP,
-  APP_INDEX,
+  NOTIBOY_APP_INDEX,
   DAPP_ESCROW,
   CREATION_FEE,
   LOCAL_INTS,
@@ -24,7 +23,7 @@ export default class SDK extends RPC {
   }
 
   //Channel Creation
-  async createChannel(address: string): Promise<algosdk.Transaction> {
+  async createChannel(sender: string): Promise<algosdk.Transaction> {
     //Reading teal code
     const tealProgram = Channel();
     const programBytes = this.convertToIntArray(tealProgram);
@@ -40,7 +39,7 @@ export default class SDK extends RPC {
     //Return the transaction for signing
     return algosdk.makeApplicationCreateTxnFromObject({
       onComplete: onComplete,
-      from: address,
+      from: sender,
       suggestedParams: params,
       approvalProgram: compiledBytes,
       clearProgram: compiledBytes,
@@ -54,7 +53,7 @@ export default class SDK extends RPC {
 
   //Opt-in to Notiboy smart contract by creator address & and payment of one-time fee
   async channelContractOptin(
-    address: string,
+    sender: string,
     creatorAppIndex: number,
     channelName: string
   ): Promise<algosdk.Transaction[]> {
@@ -76,12 +75,11 @@ export default class SDK extends RPC {
     ];
 
     const params = await this.client.getTransactionParams().do();
-    params.fee = 1000;
     params.flatFee = true;
 
     //channel creation fee
     const paymentTxn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-      from: address,
+      from: sender,
       suggestedParams: params,
       to: DAPP_ESCROW,
       amount: CREATION_FEE,
@@ -89,9 +87,9 @@ export default class SDK extends RPC {
 
     //Optin
     const optinTransaction = algosdk.makeApplicationOptInTxnFromObject({
-      from: address,
+      from: sender,
       suggestedParams: params,
-      appIndex: APP_INDEX,
+      appIndex: NOTIBOY_APP_INDEX,
       appArgs: appArgs,
       foreignApps: [creatorAppIndex],
       boxes: boxes,
@@ -100,9 +98,9 @@ export default class SDK extends RPC {
     //Noop Txns
     const noopTxns = this.createNoopTransactions(
       CHANNEL_NOOP_TXNS,
-      address,
+      sender,
       params,
-      APP_INDEX,
+      NOTIBOY_APP_INDEX,
       boxes,
       []
     );
@@ -115,7 +113,7 @@ export default class SDK extends RPC {
 
   //Channel Deletion (first we have to close-out and then delete the SC)
   async channelDelete(
-    address: string,
+    sender: string,
     creatorAppIndex: number
   ): Promise<algosdk.Transaction> {
     //Fetching prameters
@@ -123,7 +121,7 @@ export default class SDK extends RPC {
 
     //Return the transaction for signing
     return algosdk.makeApplicationDeleteTxnFromObject({
-      from: address,
+      from: sender,
       appIndex: creatorAppIndex,
       suggestedParams: params,
     });
@@ -131,7 +129,7 @@ export default class SDK extends RPC {
 
   //Channel Opt-out from Notiboy contract
   async channelContractOptout(
-    address: string,
+    sender: string,
     creatorAppIndex: number,
     channelName: string
   ): Promise<algosdk.Transaction[]> {
@@ -153,12 +151,11 @@ export default class SDK extends RPC {
     ];
 
     const params = await this.client.getTransactionParams().do();
-    params.fee = 1000;
     params.flatFee = true;
 
     //closeOut
     const closeOutTransaction = algosdk.makeApplicationCloseOutTxnFromObject({
-      from: address,
+      from: sender,
       appIndex: creatorAppIndex,
       suggestedParams: params,
       foreignApps: [creatorAppIndex],
@@ -169,9 +166,9 @@ export default class SDK extends RPC {
     //Noop Txns
     const noopTxns = this.createNoopTransactions(
       CHANNEL_NOOP_TXNS,
-      address,
+      sender,
       params,
-      APP_INDEX,
+      NOTIBOY_APP_INDEX,
       boxes,
       []
     );
@@ -184,7 +181,7 @@ export default class SDK extends RPC {
 
   //User opt-in to Notiboy SC
   async userContractOptin(
-    address: string
+    sender: string
   ): Promise<algosdk.Transaction[]> {
     const boxNameArray = this.convertToIntArray(MAIN_BOX);
     const boxes = [
@@ -203,14 +200,13 @@ export default class SDK extends RPC {
     ];
 
     const params = await this.client.getTransactionParams().do();
-    params.fee = 1000;
     params.flatFee = true;
 
     //Optin
     const optinTransaction = algosdk.makeApplicationOptInTxnFromObject({
-      from: address,
+      from: sender,
       suggestedParams: params,
-      appIndex: APP_INDEX,
+      appIndex: NOTIBOY_APP_INDEX,
       appArgs: appArgs,
       foreignApps: [],
       boxes: boxes,
@@ -219,9 +215,9 @@ export default class SDK extends RPC {
     //Noop Txns
     const noopTxns = this.createNoopTransactions(
       USER_NOOP_TXNS,
-      address,
+      sender,
       params,
-      APP_INDEX,
+      NOTIBOY_APP_INDEX,
       boxes,
       []
     );
@@ -234,14 +230,13 @@ export default class SDK extends RPC {
 
   //User opt-in to a channel
   async userChannelOptin(
-    address: string,
+    sender: string,
     channelAppIndex: number,
   ): Promise<algosdk.Transaction>{
     const params = await this.client.getTransactionParams().do();
-    params.fee = 1000;
     params.flatFee = true;
     const optinTransaction = algosdk.makeApplicationOptInTxnFromObject({
-      from: address,
+      from: sender,
       suggestedParams: params,
       appIndex: channelAppIndex,
     });
@@ -250,14 +245,13 @@ export default class SDK extends RPC {
 
   //User Opt-out of channel
   async userChannelOptout(
-    address: string,
+    sender: string,
     channelAppIndex: number,
   ): Promise<algosdk.Transaction>{
     const params = await this.client.getTransactionParams().do();
-    params.fee = 1000;
     params.flatFee = true;
     const optOutTransaction = algosdk.makeApplicationCloseOutTxnFromObject({
-      from: address,
+      from: sender,
       suggestedParams: params,
       appIndex: channelAppIndex,
     });
@@ -266,7 +260,7 @@ export default class SDK extends RPC {
 
   // Get list of public channels
   async listPublicChannels(): Promise<any[]> {
-    const appInfo = await this.indexer.lookupApplications(APP_INDEX).do();
+    const appInfo = await this.indexer.lookupApplications(NOTIBOY_APP_INDEX).do();
     const channelDetails = [];
     for (
       let i = 0;
@@ -317,7 +311,7 @@ export default class SDK extends RPC {
       i < accountInfo["account"]["apps-local-state"].length;
       i++
     ) {
-      if (accountInfo["account"]["apps-local-state"][i].id === APP_INDEX) {
+      if (accountInfo["account"]["apps-local-state"][i].id === NOTIBOY_APP_INDEX) {
         return true;
       }
     }
