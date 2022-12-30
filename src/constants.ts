@@ -1,10 +1,9 @@
 //Constants for the sdk
 export const CREATION_FEE = 1000000;
-export const APP_ARG_FOR_DAPP = "dapp";
-export const MAIN_BOX = "notiboy";
+export const NOTIBOY_BOX_NAME = "notiboy";
 export const DAPP_ESCROW =
   "3KOQUDTQAYKMXFL66Q5DS27FJJS6O3E2J3YMOC3WJRWNWJW3J4Q65POKPI";
-export const APP_INDEX = 144113274;
+export const NOTIBOY_APP_INDEX = 144113274;
 export const ZERO_TXN = 0;
 export const APP_ARG_PUB = "pub_notify";
 export const APP_ARG_PVT = "pvt_notify";

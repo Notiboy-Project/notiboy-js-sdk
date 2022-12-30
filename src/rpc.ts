@@ -65,7 +65,18 @@ export default class RPC {
     return txnsArray;
   }
 
-  //Get transaction ids for the list of notifications
+  //Read Global State Key for 
+  async readGlobalStateKey(appId:number, key:string){
+    const appInfo = await this.indexer.lookupApplications(appId).do();
+    if(appInfo['params']){
+      const globalState = appInfo['params']['global-state'];
+    }else{
+      return[]
+    }
+  }
+
+
+  //Get transaction ids from local state
   getTransactionIds(transactionDetails: Array<any>): Array<string> {
     const transactionIds: string[] = [];
     for (let j = 0; j < transactionDetails.length; j++) {
@@ -74,29 +85,30 @@ export default class RPC {
       let finalKey: any;
       // checking for "index" string to keep it as is
       const convertToString = bufferKey.toString("utf-8");
-      if (convertToString == "index") {
+      if (convertToString == "index" || convertToString == "msgcount") {
         finalKey = convertToString;
         continue;
       } else {
         // other key values are converted into number
-        finalKey = algosdk.decodeUint64(bufferKey, "mixed");
-      }
-      // Decoding the value into string and removing "===="
-      const value = transactionDetails[j].value.bytes;
-      let decodedValue = this.base32EncodeArrayBuffer(value);
-      for (let i = decodedValue.length - 1; i >= 0; i--) {
-        if (decodedValue[i] == "=") {
-          decodedValue = decodedValue.slice(0, -1);
-        } else {
-          transactionIds.splice(finalKey - 1, 0, decodedValue);
-          break;
+        finalKey = algosdk.decodeUint64(bufferKey, "mixed");   
+        // Decoding the value into string and removing "===="
+        const value = transactionDetails[j].value.bytes;
+        let decodedValue = this.base32EncodeArrayBuffer(value);
+        for (let i = decodedValue.length - 1; i >= 0; i--) {
+          if (decodedValue[i] == "=") {
+            decodedValue = decodedValue.slice(0, -1);
+          } else {
+            //sorting depending on index
+            transactionIds.splice(finalKey - 1, 0, decodedValue);
+            break;
+          }
         }
       }
     }
     return transactionIds;
   }
 
-  //Get channel details for personal notifications
+  //Get channel details from global state
   getTransactionDetails(transactionDetails: Array<any>): Array<any> {
     const channelDetails: Array<any> = [];
     for (let j = 0; j < transactionDetails.length; j++) {
@@ -104,7 +116,7 @@ export default class RPC {
       const bufferKey = Buffer.from(transactionDetails[j].key, "base64");
       // checking for "index" string to keep it as is
       const convertToString = bufferKey.toString("utf-8");
-      if (convertToString === "index") continue;
+      if (convertToString === "index" || convertToString === "msgcount") continue;
       const decodedAppName = Buffer.from(
         transactionDetails[j].value.bytes,
         "base64"

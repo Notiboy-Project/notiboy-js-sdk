@@ -1,5 +1,5 @@
 //Interfaces defined
-export interface PublicChannel {
+export interface RegularChannel {
   channelName: string;
   dappAddress: string;
   lsigAddress: string;

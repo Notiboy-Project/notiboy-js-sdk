@@ -56,12 +56,10 @@ describe("Testing notiboy functions", function () {
       .notification()
       .sendPublicNotification(
         "5OQOYHJ6BYPWFBUTFTN4JA5GJEAJUNA2P65DPNTN5OUGSFFO47NHRZR6HU",
-        "J754XZKT7PYJUE2HYTP4PXLZ5SNZ2MITOV3HOVBB3GGLFGA7H6QCSVE3U4",
-        "Karol",
+        105200,
         "Testing Notification"
       );
-    assert.equal(txns.length, 2, "Not returning two transactions");
-    assert.isNotNull(txns[0].group, "Not grouping the two transaction");
+    assert.isNotNull(txns, "Not returning the transaction");
   });
 
   it("Prepares receiving Public Notifications", async function () {
@@ -69,7 +67,8 @@ describe("Testing notiboy functions", function () {
     const notifications = await sdk
       .notification()
       .getPublicNotification(
-        "DXQ3Z5OGU4ABXDM6U5POOQK4QQ7RRP4GJ6QPN5USLZ7YTE2HQASE2VQUTM"
+        "DXQ3Z5OGU4ABXDM6U5POOQK4QQ7RRP4GJ6QPN5USLZ7YTE2HQASE2VQUTM",
+        105200
       );
     assert.isArray(
       notifications,
@@ -77,32 +76,32 @@ describe("Testing notiboy functions", function () {
     );
   });
 
-  it("Prepares sending personal notifications", async function () {
-    const txns = await sdk
-      .notification()
-      .sendPersonalNotification(
-        "2K3YHO443GBX2BTEF2B7R7ZXEUCNVE3GWETOTTVCV42SGSJ2TL5HLNG5DM",
-        "AD5J43O3N6UPEUFYOZHT6WBUXDOK66MMGL3JHQV77Y2EAEZJVLRCINWYBI",
-        "vcs",
-        "J754XZKT7PYJUE2HYTP4PXLZ5SNZ2MITOV3HOVBB3GGLFGA7H6QCSVE3U4",
-        "Testing Notification"
-      );
-    assert.equal(txns.length, 2, "Not returning two transactions");
-    assert.isNotNull(txns[0].group, "Not grouping the two transaction");
-  });
+  // it("Prepares sending personal notifications", async function () {
+  //   const txns = await sdk
+  //     .notification()
+  //     .sendPersonalNotification(
+  //       "2K3YHO443GBX2BTEF2B7R7ZXEUCNVE3GWETOTTVCV42SGSJ2TL5HLNG5DM",
+  //       "AD5J43O3N6UPEUFYOZHT6WBUXDOK66MMGL3JHQV77Y2EAEZJVLRCINWYBI",
+  //       "vcs",
+  //       "J754XZKT7PYJUE2HYTP4PXLZ5SNZ2MITOV3HOVBB3GGLFGA7H6QCSVE3U4",
+  //       "Testing Notification"
+  //     );
+  //   assert.equal(txns.length, 2, "Not returning two transactions");
+  //   assert.isNotNull(txns[0].group, "Not grouping the two transaction");
+  // });
 
-  it("Prepares receiving personal notification", async function () {
-    this.timeout(5000);
-    const notifications = await sdk
-      .notification()
-      .getPersonalNotification(
-        "P7U6A5G7CQXFJPH3S576ZPCFCY5XPUP5RHR577S5NTNN3LR2WURHAK3SUE"
-      );
-    assert.isArray(
-      notifications,
-      "The local state is not fetched proporly. Either there is no notifications or notifications not fetched properly."
-    );
-  });
+  // it("Prepares receiving personal notification", async function () {
+  //   this.timeout(5000);
+  //   const notifications = await sdk
+  //     .notification()
+  //     .getPersonalNotification(
+  //       "P7U6A5G7CQXFJPH3S576ZPCFCY5XPUP5RHR577S5NTNN3LR2WURHAK3SUE"
+  //     );
+  //   assert.isArray(
+  //     notifications,
+  //     "The local state is not fetched proporly. Either there is no notifications or notifications not fetched properly."
+  //   );
+  // });
 
   it("Prepares checks optin state of address", async function () {
     const optinState = await sdk.getoptinState(
@@ -110,10 +109,11 @@ describe("Testing notiboy functions", function () {
     );
     assert.isNotNull(optinState, "Optin state not properly fetched.");
   });
-
-  it("Prepares testing", async function () {
-    const appId = 144113274;
-    const accountInfo = await indexer.searchAccounts().applicationID(appId).do();
-    console.log(accountInfo);
-  });
+  
+  //Getting the list of opted in addresses to an app id
+  // it("Prepares testing", async function () {
+  //   const appId = 144113274;
+  //   const accountInfo = await indexer.searchAccounts().applicationID(appId).do();
+  //   console.log(accountInfo);
+  // });
 });

@@ -9,7 +9,7 @@ import {
   LOCAL_BYTES,
   GLOBAL_BYTES,
   APP_ARG_NULL,
-  MAIN_BOX,
+  NOTIBOY_BOX_NAME,
   CHANNEL_NOOP_TXNS,
   USER_NOOP_TXNS
 } from "./constants";
@@ -57,7 +57,7 @@ export default class SDK extends RPC {
     creatorAppIndex: number,
     channelName: string
   ): Promise<algosdk.Transaction[]> {
-    const boxNameArray = this.convertToIntArray(MAIN_BOX);
+    const boxNameArray = this.convertToIntArray(NOTIBOY_BOX_NAME);
     const boxes = [
       { appIndex: 0, name: boxNameArray },
       { appIndex: 0, name: boxNameArray },
@@ -133,7 +133,7 @@ export default class SDK extends RPC {
     creatorAppIndex: number,
     channelName: string
   ): Promise<algosdk.Transaction[]> {
-    const boxNameArray = this.convertToIntArray(MAIN_BOX);
+    const boxNameArray = this.convertToIntArray(NOTIBOY_BOX_NAME);
     const boxes = [
       { appIndex: 0, name: boxNameArray },
       { appIndex: 0, name: boxNameArray },
@@ -183,7 +183,7 @@ export default class SDK extends RPC {
   async userContractOptin(
     sender: string
   ): Promise<algosdk.Transaction[]> {
-    const boxNameArray = this.convertToIntArray(MAIN_BOX);
+    const boxNameArray = this.convertToIntArray(NOTIBOY_BOX_NAME);
     const boxes = [
       { appIndex: 0, name: boxNameArray },
       { appIndex: 0, name: boxNameArray },
