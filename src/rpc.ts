@@ -1,7 +1,7 @@
 //Defined basic RPC methods
 import algosdk, { Transaction } from "algosdk";
 import * as base32 from "hi-base32";
-
+import { PublicNotification } from "./interfaces";
 export default class RPC {
   protected client: algosdk.Algodv2;
   protected indexer: algosdk.Indexer;
@@ -13,6 +13,10 @@ export default class RPC {
 
   convertToIntArray(arg: string): Uint8Array {
     return new Uint8Array(Buffer.from(arg));
+  }
+
+  convertToString(arg:Uint8Array):string{
+    return  new TextDecoder().decode(arg)
   }
 
   convertToArrayBuffer(arg: string): any {
@@ -68,7 +72,7 @@ export default class RPC {
   //Read Global State Key for 
   async readGlobalStateKey(appId:number, key:string){
     const appInfo = await this.indexer.lookupApplications(appId).do();
-    if(appInfo['params']){
+    if(appInfo['params']['global-state']){
       const globalState = appInfo['params']['global-state'];
     }else{
       return[]
@@ -77,35 +81,80 @@ export default class RPC {
 
 
   //Get transaction ids from local state
-  getTransactionIds(transactionDetails: Array<any>): Array<string> {
-    const transactionIds: string[] = [];
+  getLocalState(transactionDetails: Array<any>): PublicNotification[] {
+    const publicNotifications: PublicNotification[] = [];
     for (let j = 0; j < transactionDetails.length; j++) {
       // converting key into array buffer
       const bufferKey = Buffer.from(transactionDetails[j].key, "base64");
       let finalKey: any;
       // checking for "index" string to keep it as is
       const convertToString = bufferKey.toString("utf-8");
-      if (convertToString == "index" || convertToString == "msgcount") {
+      if (convertToString == "index" || convertToString == "msgcount" || convertToString == "whoami") {
         finalKey = convertToString;
         continue;
       } else {
         // other key values are converted into number
         finalKey = algosdk.decodeUint64(bufferKey, "mixed");   
-        // Decoding the value into string and removing "===="
-        const value = transactionDetails[j].value.bytes;
-        let decodedValue = this.base32EncodeArrayBuffer(value);
-        for (let i = decodedValue.length - 1; i >= 0; i--) {
-          if (decodedValue[i] == "=") {
-            decodedValue = decodedValue.slice(0, -1);
-          } else {
-            //sorting depending on index
-            transactionIds.splice(finalKey - 1, 0, decodedValue);
-            break;
-          }
+        const publicNotification = Buffer.from(transactionDetails[j].value.bytes,"base64").toString();
+        console.log(publicNotification)
+        let PublicNotification = {
+          index:finalKey,
+          notification:publicNotification,
         }
+        publicNotifications.unshift(PublicNotification)
       }
     }
-    return transactionIds;
+    return publicNotifications;
+  }
+
+  readCounter(transactionDetails: Array<any>): number[] {
+      let counter:number[] = [0,0];
+    for (let j = 0; j < transactionDetails.length; j++) {
+      // converting key into array buffer
+      const bufferKey = Buffer.from(transactionDetails[j].key, "base64");
+      let finalKey: any;
+      const convertToString = bufferKey.toString("utf-8");
+      if (convertToString == "msgcount") {
+        finalKey = convertToString;
+        console.log(finalKey)
+        const value = transactionDetails[j].value.bytes;
+        console.log(value.length)
+        counter = [Number(algosdk.bytesToBigInt(value.slice(0,8))),Number(algosdk.bytesToBigInt(value.slice(9,17)))];
+      }
+    }
+    return counter;
+  }
+
+  checkIsZeroValue(byteData:Uint8Array,index:number):boolean{
+    let data = this.convertToString(byteData);
+    console.log(data, ":")
+    const check = data.replace(/^0+/, '').replace(/0+$/, '').trim()
+    if(check == ""){
+      return true
+    }else{
+      // console.log(index,":",check,":",check.length,":")
+      return false
+    } 
+  }
+
+  parseMainBoxChunk(chunk:Uint8Array, index:number){
+    const chunkItems = [this.convertToString(chunk.slice(0,10)).replace(/^:+/, ''),Number(algosdk.bytesToBigInt(chunk.slice(10,18))),this.convertToString(chunk.slice(18))];
+    return{
+      channelName: chunkItems[0],
+      appIndex: chunkItems[1],
+      channelIndex: index, 
+      verificationStatus: chunkItems[2]
+    }
+  }
+
+  parseUserBoxChunk(chunk:Uint8Array){
+    const chunkItems = [Number(algosdk.bytesToBigInt(chunk.slice(0,8))),Number(algosdk.bytesToBigInt(chunk.slice(8,16))),
+      this.convertToString(chunk.slice(16)).replace(/0+$/, '')];
+    return{
+      appIndex: chunkItems[0],
+      notification: chunkItems[2],
+      timeStamp: chunkItems[1],
+    }
   }
 
   //Get channel details from global state

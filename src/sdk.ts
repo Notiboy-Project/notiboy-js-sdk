@@ -3,7 +3,10 @@ import algosdk from "algosdk";
 import {
   NOTIBOY_APP_INDEX,
   DAPP_ESCROW,
-  CREATION_FEE,
+  SC_ESCHROW,
+  CHANNEL_CREATION_FEE,
+  USER_BOX_CREATION_FEE,
+  ASA_ASSET,
   LOCAL_INTS,
   GLOBAL_INTS,
   LOCAL_BYTES,
@@ -11,11 +14,13 @@ import {
   APP_ARG_NULL,
   NOTIBOY_BOX_NAME,
   CHANNEL_NOOP_TXNS,
-  USER_NOOP_TXNS
+  USER_NOOP_TXNS,
+  MAX_MAIN_BOX_MSG_SIZE
 } from "./constants";
 import RPC from "./rpc";
 import Notification from "./notifications";
 import Channel from "./channel";
+import {RegularChannel} from "./interfaces";
 
 export default class SDK extends RPC {
   isValidAddress(address: string): boolean {
@@ -75,14 +80,14 @@ export default class SDK extends RPC {
     ];
 
     const params = await this.client.getTransactionParams().do();
-    params.flatFee = true;
 
     //channel creation fee
-    const paymentTxn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+    const paymentTxn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
       from: sender,
+      assetIndex:ASA_ASSET,
       suggestedParams: params,
       to: DAPP_ESCROW,
-      amount: CREATION_FEE,
+      amount: CHANNEL_CREATION_FEE,
     });
 
     //Optin
@@ -91,8 +96,8 @@ export default class SDK extends RPC {
       suggestedParams: params,
       appIndex: NOTIBOY_APP_INDEX,
       appArgs: appArgs,
-      foreignApps: [creatorAppIndex],
-      boxes: boxes,
+      foreignAssets:[ASA_ASSET],
+      foreignApps: [creatorAppIndex]
     });
 
     //Noop Txns
@@ -151,16 +156,14 @@ export default class SDK extends RPC {
     ];
 
     const params = await this.client.getTransactionParams().do();
-    params.flatFee = true;
 
     //closeOut
     const closeOutTransaction = algosdk.makeApplicationCloseOutTxnFromObject({
       from: sender,
-      appIndex: creatorAppIndex,
+      appIndex: NOTIBOY_APP_INDEX,
       suggestedParams: params,
       foreignApps: [creatorAppIndex],
-      appArgs: appArgs,
-      boxes: boxes,
+      appArgs: appArgs
     });
 
     //Noop Txns
@@ -183,7 +186,7 @@ export default class SDK extends RPC {
   async userContractOptin(
     sender: string
   ): Promise<algosdk.Transaction[]> {
-    const boxNameArray = this.convertToIntArray(NOTIBOY_BOX_NAME);
+    const boxNameArray = algosdk.decodeAddress(sender).publicKey;
     const boxes = [
       { appIndex: 0, name: boxNameArray },
       { appIndex: 0, name: boxNameArray },
@@ -200,7 +203,13 @@ export default class SDK extends RPC {
     ];
 
     const params = await this.client.getTransactionParams().do();
-    params.flatFee = true;
+
+    const paymentTxn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+      from: sender,
+      suggestedParams: params,
+      to: algosdk.getApplicationAddress(NOTIBOY_APP_INDEX),
+      amount: USER_BOX_CREATION_FEE,
+    });
 
     //Optin
     const optinTransaction = algosdk.makeApplicationOptInTxnFromObject({
@@ -208,22 +217,11 @@ export default class SDK extends RPC {
       suggestedParams: params,
       appIndex: NOTIBOY_APP_INDEX,
       appArgs: appArgs,
-      foreignApps: [],
       boxes: boxes,
     });
 
-    //Noop Txns
-    const noopTxns = this.createNoopTransactions(
-      USER_NOOP_TXNS,
-      sender,
-      params,
-      NOTIBOY_APP_INDEX,
-      boxes,
-      []
-    );
     //Group Transactions
-    const basicTxns = [optinTransaction];
-    const groupTxns = basicTxns.concat(noopTxns);
+    const groupTxns = [paymentTxn,optinTransaction];
     algosdk.assignGroupID(groupTxns);
     return groupTxns;
   }
@@ -234,7 +232,6 @@ export default class SDK extends RPC {
     channelAppIndex: number,
   ): Promise<algosdk.Transaction>{
     const params = await this.client.getTransactionParams().do();
-    params.flatFee = true;
     const optinTransaction = algosdk.makeApplicationOptInTxnFromObject({
       from: sender,
       suggestedParams: params,
@@ -249,7 +246,6 @@ export default class SDK extends RPC {
     channelAppIndex: number,
   ): Promise<algosdk.Transaction>{
     const params = await this.client.getTransactionParams().do();
-    params.flatFee = true;
     const optOutTransaction = algosdk.makeApplicationCloseOutTxnFromObject({
       from: sender,
       suggestedParams: params,
@@ -258,7 +254,54 @@ export default class SDK extends RPC {
     return optOutTransaction;
   }
 
-  // Get list of public channels
+  //Read channel list
+  async getChannelList(
+  ){
+    try {
+      const boxResponse = await this.client.getApplicationBoxByName(NOTIBOY_APP_INDEX, this.convertToIntArray(NOTIBOY_BOX_NAME)).do();
+      const value = boxResponse.value;
+      //Getting each channel details as chunk
+      let chunks:Uint8Array[] = [];
+      let channels: RegularChannel[] = [];
+
+      for(let i=0; i<value.length; i+= MAX_MAIN_BOX_MSG_SIZE){
+        chunks.push(value.slice(i,i+ MAX_MAIN_BOX_MSG_SIZE))      
+      } 
+
+      let index = 0;
+      for(let i=0; i<chunks.length; i++){
+        if(this.checkIsZeroValue(chunks[i])) continue;
+        else{
+          const channel = this.parseMainBoxChunk(chunks[i],index);
+          index += MAX_MAIN_BOX_MSG_SIZE;
+          channels.push(channel);
+        }
+      }
+      return channels;
+    } catch (error) {
+      return []
+    }
+  }
+
+  //Get counter
+  async getCounter(
+    sender: string,
+  ):Promise<number[]>{
+    try {
+      const localState = await this.indexer
+        .lookupAccountAppLocalStates(sender)
+        .applicationID(NOTIBOY_APP_INDEX)
+        .do();
+      if (localState["apps-local-states"] == undefined) return [0,0] ;
+      const transactionDetails = localState["apps-local-states"][0]["key-value"];
+      return this.readCounter(transactionDetails);
+    } catch (error) {
+      console.log(error)
+      return [0,0]
+    }
+  } 
+
+  // read global state
   async listPublicChannels(): Promise<any[]> {
     const appInfo = await this.indexer.lookupApplications(NOTIBOY_APP_INDEX).do();
     const channelDetails = [];
