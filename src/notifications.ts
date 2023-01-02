@@ -47,7 +47,7 @@ export default class Notification extends RPC {
     const note = this.encodeString(notification);
 
     const boxNameArray = algosdk.decodeAddress(receiver).publicKey;
-    let boxes = [
+    const boxes = [
       { appIndex: 0, name: boxNameArray },
       { appIndex: 0, name: boxNameArray },
       { appIndex: 0, name: boxNameArray },
@@ -58,7 +58,7 @@ export default class Notification extends RPC {
 
     const appArgs = [
       this.encodeString(APP_ARG_PVT),
-      this.encodeString(channelName)
+      this.encodeString(channelName),
     ];
 
     const foreignApps = [channelAppIndex];
@@ -106,7 +106,7 @@ export default class Notification extends RPC {
         .getApplicationBoxByName(NOTIBOY_APP_INDEX, Buffer.from(boxName))
         .do();
       const value = boxResponse.value;
-      let chunks: Uint8Array[] = [];
+      const chunks: Uint8Array[] = [];
       const notifications: PersonalNotification[] = [];
       //splitting the box data into chunks
       for (let i = 0; i < value.length; i += MAX_USER_BOX_MSG_SIZE) {

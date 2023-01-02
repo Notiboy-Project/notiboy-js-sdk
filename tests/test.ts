@@ -66,7 +66,6 @@ describe("Testing notiboy functions", function () {
   it("Prepares receiving list of public channels", async function () {
   this.timeout(5000)
     const listPublicChannels = await sdk.getChannelList();
-    console.log(listPublicChannels)
     assert.isNotNull(
       listPublicChannels,
       "The app id does not exist or the channel details are not fetched properly."
@@ -107,9 +106,8 @@ describe("Testing notiboy functions", function () {
         "SVCYFMQM6QER62RMPSVUHHIZXUIYHBXEZVGUPL6OVBRBNK7LNVGIRYMP3Y",
         151406743,
         "MINT",
-        "Personal Notification number4 from MINT "
-      );
-
+        "Personal Notification number5 from MINT "
+    );
     assert.isNotNull(txns, "Not sending personal notifications");
   });
 
@@ -120,7 +118,6 @@ describe("Testing notiboy functions", function () {
       .getPersonalNotification(
         "SVCYFMQM6QER62RMPSVUHHIZXUIYHBXEZVGUPL6OVBRBNK7LNVGIRYMP3Y"
       );
-    console.log(notifications)
     assert.isArray(
       notifications,
       "Box storage. Either there is no notifications or notifications not fetched properly."
@@ -157,7 +154,6 @@ describe("Testing notiboy functions", function () {
     const addressList = await sdk.getOptinAddressList(
       144113274
     )
-    console.log(addressList)
     assert.isArray(addressList, "List of addresses not properly fetched.");
   });
   

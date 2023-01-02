@@ -53,7 +53,7 @@ export default class RPC {
     }[],
     foreignApps: Array<number>
   ): algosdk.Transaction[] {
-    let txnsArray = [];
+    const txnsArray = [];
     for (let i = 0; i < txns; i++) {
       txnsArray.push(
         algosdk.makeApplicationNoOpTxnFromObject({
@@ -88,8 +88,10 @@ export default class RPC {
       } else {
         // other key values are converted into number
         finalKey = algosdk.decodeUint64(bufferKey, "mixed");
-        const publicNotification = this.decodeNote(transactionDetails[j].value.bytes)
-        let PublicNotification = {
+        const publicNotification = this.decodeNote(
+          transactionDetails[j].value.bytes
+        );
+        const PublicNotification = {
           index: finalKey,
           notification: publicNotification,
         };
@@ -105,7 +107,7 @@ export default class RPC {
       // converting key into array buffer
       const finalKey = this.decodeNote(transactionDetails[j].key);
       if (finalKey == "msgcount") {
-        const value = Buffer.from(transactionDetails[j].value.bytes, 'base64');
+        const value = Buffer.from(transactionDetails[j].value.bytes, "base64");
         counter = [
           Number(algosdk.bytesToBigInt(value.slice(0, 8))),
           Number(algosdk.bytesToBigInt(value.slice(9, 17))),
@@ -116,7 +118,7 @@ export default class RPC {
   }
 
   checkIsZeroValue(byteData: Uint8Array): boolean {
-    let data = this.convertToString(byteData);
+    const data = this.convertToString(byteData);
     const check = data.replace(/^0+/, "").replace(/0+$/, "").trim();
     if (check == "") {
       return true;

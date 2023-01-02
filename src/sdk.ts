@@ -141,7 +141,7 @@ export default class SDK extends RPC {
     sender: string,
     creatorAppIndex: number,
     channelName: string,
-    channelBoxIndex:number
+    channelBoxIndex: number
   ): Promise<algosdk.Transaction[]> {
     const boxNameArray = this.convertToIntArray(NOTIBOY_BOX_NAME);
     const boxes = [
@@ -158,7 +158,7 @@ export default class SDK extends RPC {
     const appArgs = [
       this.convertToIntArray("dapp"),
       this.convertToIntArray(channelName),
-      algosdk.bigIntToBytes(channelBoxIndex,8)
+      algosdk.bigIntToBytes(channelBoxIndex, 8),
     ];
 
     const params = await this.client.getTransactionParams().do();
@@ -267,18 +267,17 @@ export default class SDK extends RPC {
         .do();
       const value = boxResponse.value;
       //Getting each channel details as chunk
-      let chunks: Uint8Array[] = [];
-      let channels: RegularChannel[] = [];
+      const chunks: Uint8Array[] = [];
+      const channels: RegularChannel[] = [];
 
       for (let i = 0; i < value.length; i += MAX_MAIN_BOX_MSG_SIZE) {
         chunks.push(value.slice(i, i + MAX_MAIN_BOX_MSG_SIZE));
       }
 
       for (let i = 0; i < chunks.length; i++) {
-        if (this.checkIsZeroValue(chunks[i])){
+        if (this.checkIsZeroValue(chunks[i])) {
           continue;
-        }
-        else {
+        } else {
           const channel = this.parseMainBoxChunk(chunks[i], i);
           channels.push(channel);
         }
@@ -322,8 +321,10 @@ export default class SDK extends RPC {
     return false;
   }
 
-  async getChannelScOptinState(address: string,
-    channelAppIndex: number): Promise<boolean> {
+  async getChannelScOptinState(
+    address: string,
+    channelAppIndex: number
+  ): Promise<boolean> {
     const accountInfo = await this.indexer.lookupAccountByID(address).do();
     if (accountInfo["account"]["apps-local-state"] == undefined) return false;
     for (
@@ -340,23 +341,32 @@ export default class SDK extends RPC {
     return false;
   }
 
-  async getOptinAddressList(channelAppIndex:number):Promise<string[]>{
-    let nextToken= '';
+  async getOptinAddressList(channelAppIndex: number): Promise<string[]> {
+    let nextToken = "";
     let accountInfo;
-    let addressList = [];
-    //A do while loop to get full list of asset ids 
-    do{
-        if(nextToken == '') {
-            accountInfo = await this.indexer.searchAccounts().applicationID(channelAppIndex).do();
-            nextToken = accountInfo['next-token']
-            console.log("Next Token: ",nextToken)
-            for (let i = 0; i < accountInfo['accounts'].length; i++) addressList.push(accountInfo['accounts'][i].address);
-        } else{
-            accountInfo = await this.indexer.searchAccounts().applicationID(channelAppIndex).nextToken(nextToken).do();
-            nextToken = accountInfo['next-token']
-            for (let i = 0; i < accountInfo['accounts'].length; i++) addressList.push(accountInfo['accounts'][i].address);
-        }
-    } while (accountInfo['accounts'].length > 0)  
-  return addressList;
+    const addressList = [];
+    //A do while loop to get full list of asset ids
+    do {
+      if (nextToken == "") {
+        accountInfo = await this.indexer
+          .searchAccounts()
+          .applicationID(channelAppIndex)
+          .do();
+        nextToken = accountInfo["next-token"];
+        console.log("Next Token: ", nextToken);
+        for (let i = 0; i < accountInfo["accounts"].length; i++)
+          addressList.push(accountInfo["accounts"][i].address);
+      } else {
+        accountInfo = await this.indexer
+          .searchAccounts()
+          .applicationID(channelAppIndex)
+          .nextToken(nextToken)
+          .do();
+        nextToken = accountInfo["next-token"];
+        for (let i = 0; i < accountInfo["accounts"].length; i++)
+          addressList.push(accountInfo["accounts"][i].address);
+      }
+    } while (accountInfo["accounts"].length > 0);
+    return addressList;
   }
 }
