@@ -101,17 +101,17 @@ export default class RPC {
     return publicNotifications;
   }
 
-  readCounter(transactionDetails: Array<any>): number[] {
-    let counter: number[] = [0, 0];
+  readCounter(transactionDetails: Array<any>): { personalNotification: number; publicNotification: number }{
+    let counter = { personalNotification: 0, publicNotification: 0 } ;
     for (let j = 0; j < transactionDetails.length; j++) {
       // converting key into array buffer
       const finalKey = this.decodeNote(transactionDetails[j].key);
       if (finalKey == "msgcount") {
         const value = Buffer.from(transactionDetails[j].value.bytes, "base64");
-        counter = [
-          Number(algosdk.bytesToBigInt(value.slice(0, 8))),
-          Number(algosdk.bytesToBigInt(value.slice(9, 17))),
-        ];
+        counter = {
+          personalNotification:Number(algosdk.bytesToBigInt(value.slice(0, 8))),
+          publicNotification:Number(algosdk.bytesToBigInt(value.slice(9, 17))),
+        };
       }
     }
     return counter;

@@ -289,18 +289,18 @@ export default class SDK extends RPC {
   }
 
   //Get counter
-  async getCounter(sender: string): Promise<number[]> {
+  async getCounter(sender: string): Promise<{ personalNotification: number; publicNotification: number }> {
     try {
       const localState = await this.indexer
         .lookupAccountAppLocalStates(sender)
         .applicationID(NOTIBOY_APP_INDEX)
         .do();
-      if (localState["apps-local-states"] == undefined) return [0, 0];
+      if (localState["apps-local-states"] == undefined) return {personalNotification: 0,publicNotification: 0};
       const transactionDetails =
         localState["apps-local-states"][0]["key-value"];
       return this.readCounter(transactionDetails);
     } catch (error) {
-      return [0, 0];
+      return {personalNotification: 0,publicNotification: 0};
     }
   }
 
@@ -353,7 +353,6 @@ export default class SDK extends RPC {
           .applicationID(channelAppIndex)
           .do();
         nextToken = accountInfo["next-token"];
-        console.log("Next Token: ", nextToken);
         for (let i = 0; i < accountInfo["accounts"].length; i++)
           addressList.push(accountInfo["accounts"][i].address);
       } else {
