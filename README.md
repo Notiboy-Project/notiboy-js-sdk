@@ -38,7 +38,7 @@ npm run test
 ```
 
 #### Example
-Documentation with further explanation can be found in [Docs]https://app.gitbook.com/o/9RkK2DmCuUAfS1Y7JgGY/s/AMi9FLeIgYlsh5ZQY5US/
+Documentation with further explanation can be found in [Docs](https://notiboy-project.gitbook.io/notiboy-project/)
 
 Example implementation of the SDK can be seen in this vue.js [webApp](https://github.com/Notiboy-Project/notiboy-webapp/blob/main/src/store/index.js)
 
