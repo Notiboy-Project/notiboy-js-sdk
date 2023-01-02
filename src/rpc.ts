@@ -1,7 +1,7 @@
 //Defined basic RPC methods
 import algosdk from "algosdk";
 import * as base32 from "hi-base32";
-import { PublicNotification } from "./interfaces";
+import { PublicNotification, counter } from "./interfaces";
 export default class RPC {
   protected client: algosdk.Algodv2;
   protected indexer: algosdk.Indexer;
@@ -101,16 +101,18 @@ export default class RPC {
     return publicNotifications;
   }
 
-  readCounter(transactionDetails: Array<any>): { personalNotification: number; publicNotification: number }{
-    let counter = { personalNotification: 0, publicNotification: 0 } ;
+  readCounter(transactionDetails: Array<any>): counter {
+    let counter = { personalNotification: 0, publicNotification: 0 };
     for (let j = 0; j < transactionDetails.length; j++) {
       // converting key into array buffer
       const finalKey = this.decodeNote(transactionDetails[j].key);
       if (finalKey == "msgcount") {
         const value = Buffer.from(transactionDetails[j].value.bytes, "base64");
         counter = {
-          personalNotification:Number(algosdk.bytesToBigInt(value.slice(0, 8))),
-          publicNotification:Number(algosdk.bytesToBigInt(value.slice(9, 17))),
+          personalNotification: Number(
+            algosdk.bytesToBigInt(value.slice(0, 8))
+          ),
+          publicNotification: Number(algosdk.bytesToBigInt(value.slice(9, 17))),
         };
       }
     }

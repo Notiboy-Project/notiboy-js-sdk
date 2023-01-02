@@ -13,13 +13,12 @@ import {
   APP_ARG_NULL,
   NOTIBOY_BOX_NAME,
   CHANNEL_NOOP_TXNS,
-  USER_NOOP_TXNS,
   MAX_MAIN_BOX_MSG_SIZE,
 } from "./constants";
 import RPC from "./rpc";
 import Notification from "./notifications";
 import Channel from "./channel";
-import { RegularChannel } from "./interfaces";
+import { counter, RegularChannel } from "./interfaces";
 
 export default class SDK extends RPC {
   //Get notifications from a channel
@@ -289,18 +288,19 @@ export default class SDK extends RPC {
   }
 
   //Get counter
-  async getCounter(sender: string): Promise<{ personalNotification: number; publicNotification: number }> {
+  async getCounter(sender: string): Promise<counter> {
     try {
       const localState = await this.indexer
         .lookupAccountAppLocalStates(sender)
         .applicationID(NOTIBOY_APP_INDEX)
         .do();
-      if (localState["apps-local-states"] == undefined) return {personalNotification: 0,publicNotification: 0};
+      if (localState["apps-local-states"] == undefined)
+        return { personalNotification: 0, publicNotification: 0 };
       const transactionDetails =
         localState["apps-local-states"][0]["key-value"];
       return this.readCounter(transactionDetails);
     } catch (error) {
-      return {personalNotification: 0,publicNotification: 0};
+      return { personalNotification: 0, publicNotification: 0 };
     }
   }
 

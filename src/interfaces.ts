@@ -16,3 +16,8 @@ export interface PersonalNotification {
   notification: string | number;
   timeStamp: string | number;
 }
+
+export interface counter {
+  personalNotification: number;
+  publicNotification: number;
+}
