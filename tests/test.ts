@@ -11,54 +11,77 @@ const sdk = new SDK(client, indexer);
 describe("Testing notiboy functions", function () {
   it("Prepares creation of channel", async function () {
     this.timeout(5000);
-    const txns = await sdk.createChannel("AD5J43O3N6UPEUFYOZHT6WBUXDOK66MMGL3JHQV77Y2EAEZJVLRCINWYBI");
+    const txns = await sdk.createChannel("3KOQUDTQAYKMXFL66Q5DS27FJJS6O3E2J3YMOC3WJRWNWJW3J4Q65POKPI");
     assert.isNotNull(txns, "Channel not created");
   });
 
-  it("Prepares optin transactions for channel creator", async function () {
-    const txns = await sdk.channelContractOptin(
-      "HZ57J3K46JIJXILONBBZOHX6BKPXEM2VVXNRFSUED6DKFD5ZD24PMJ3MVA",
-      110,
-      "FunnyMeme"
+  it("Prepares optout transactions from Notiboy SC for channel creator", async function () {
+    const txns = await sdk.channelContractOptout(
+      "3KOQUDTQAYKMXFL66Q5DS27FJJS6O3E2J3YMOC3WJRWNWJW3J4Q65POKPI",
+      151406743,
+      "MINT",
+      5
     );
     assert.equal(txns.length, 5, "Not returning 5 transactions");
     assert.isNotNull(txns[0].group, "Not grouping the  transaction");
   });
 
-  it("Prepares optout for channel creator", async function () {
-    const txns = await sdk.channelContractOptout(
-      "AD5J43O3N6UPEUFYOZHT6WBUXDOK66MMGL3JHQV77Y2EAEZJVLRCINWYBI",
-      110,
-      "FunnyMeme"
+  it("Prepares optin transactions for channel creator", async function () {
+    const txns = await sdk.channelContractOptin(
+      "3KOQUDTQAYKMXFL66Q5DS27FJJS6O3E2J3YMOC3WJRWNWJW3J4Q65POKPI",
+      151406743,
+      "MINT"
     );
-    assert.equal(txns.length, 5, "Not returning two transactions");
-    assert.isNotNull(txns[0].group, "Not grouping the two transaction");
+    assert.equal(txns.length, 6, "Not returning 6 transactions");
+    assert.isNotNull(txns[0].group, "Not grouping the  transaction");
   });
 
-  it("Prepares destruction of channel SC", async function () {
-    const txns = await sdk. channelDelete(
-      "AD5J43O3N6UPEUFYOZHT6WBUXDOK66MMGL3JHQV77Y2EAEZJVLRCINWYBI",
-      110,
+  it("Prepares user opt-in to Notiboy sc", async function () {
+    const txns = await sdk.userContractOptin(
+      "SVCYFMQM6QER62RMPSVUHHIZXUIYHBXEZVGUPL6OVBRBNK7LNVGIRYMP3Y",
     );
-    assert.isNotNull(txns, "Not destroying channel SC");
+
+    assert.equal(txns.length, 2, "Not returning 2 transactions");
+    assert.isNotNull(txns[0].group, "Not grouping the  transaction");
+  });
+
+  it("Prepares check opt-out for end user to channel SC", async function () {
+    const txns = await sdk.userChannelOptout(
+      "SVCYFMQM6QER62RMPSVUHHIZXUIYHBXEZVGUPL6OVBRBNK7LNVGIRYMP3Y",
+      151406743
+    );
+
+    assert.isNotNull(txns, "transaction not created properly.");
+  });
+
+  it("Prepares check opt-in for end user to channel SC", async function () {
+    const txns = await sdk.userChannelOptin(
+      "SVCYFMQM6QER62RMPSVUHHIZXUIYHBXEZVGUPL6OVBRBNK7LNVGIRYMP3Y",
+      151406743
+    );
+
+    assert.isNotNull(txns, "transaction not created properly.");
   });
 
   it("Prepares receiving list of public channels", async function () {
-    const listPublicChannels = await sdk.listPublicChannels();
+  this.timeout(5000)
+    const listPublicChannels = await sdk.getChannelList();
+    console.log(listPublicChannels)
     assert.isNotNull(
       listPublicChannels,
       "The app id does not exist or the channel details are not fetched properly."
     );
   });
 
-  it("Prepares send public notifications", async function () {
+  it("Prepares sending public notifications", async function () {
     const txns = await sdk
       .notification()
       .sendPublicNotification(
-        "5OQOYHJ6BYPWFBUTFTN4JA5GJEAJUNA2P65DPNTN5OUGSFFO47NHRZR6HU",
-        105200,
-        "Testing Notification"
+        "3KOQUDTQAYKMXFL66Q5DS27FJJS6O3E2J3YMOC3WJRWNWJW3J4Q65POKPI",
+        151406743,
+        "Public Notification number 2 "
       );
+
     assert.isNotNull(txns, "Not returning the transaction");
   });
 
@@ -67,53 +90,75 @@ describe("Testing notiboy functions", function () {
     const notifications = await sdk
       .notification()
       .getPublicNotification(
-        "DXQ3Z5OGU4ABXDM6U5POOQK4QQ7RRP4GJ6QPN5USLZ7YTE2HQASE2VQUTM",
-        105200
+        "3KOQUDTQAYKMXFL66Q5DS27FJJS6O3E2J3YMOC3WJRWNWJW3J4Q65POKPI"
       );
+
     assert.isArray(
       notifications,
       "The local state is not fetched proporly. Either there is no notifications or notifications not fetched properly."
     );
   });
 
-  // it("Prepares sending personal notifications", async function () {
-  //   const txns = await sdk
-  //     .notification()
-  //     .sendPersonalNotification(
-  //       "2K3YHO443GBX2BTEF2B7R7ZXEUCNVE3GWETOTTVCV42SGSJ2TL5HLNG5DM",
-  //       "AD5J43O3N6UPEUFYOZHT6WBUXDOK66MMGL3JHQV77Y2EAEZJVLRCINWYBI",
-  //       "vcs",
-  //       "J754XZKT7PYJUE2HYTP4PXLZ5SNZ2MITOV3HOVBB3GGLFGA7H6QCSVE3U4",
-  //       "Testing Notification"
-  //     );
-  //   assert.equal(txns.length, 2, "Not returning two transactions");
-  //   assert.isNotNull(txns[0].group, "Not grouping the two transaction");
-  // });
+  it("Prepares sending personal notifications", async function () {
+    const txns = await sdk
+      .notification()
+      .sendPersonalNotification(
+        "3KOQUDTQAYKMXFL66Q5DS27FJJS6O3E2J3YMOC3WJRWNWJW3J4Q65POKPI",
+        "SVCYFMQM6QER62RMPSVUHHIZXUIYHBXEZVGUPL6OVBRBNK7LNVGIRYMP3Y",
+        151406743,
+        "MINT",
+        "Personal Notification number4 from MINT "
+      );
 
-  // it("Prepares receiving personal notification", async function () {
-  //   this.timeout(5000);
-  //   const notifications = await sdk
-  //     .notification()
-  //     .getPersonalNotification(
-  //       "P7U6A5G7CQXFJPH3S576ZPCFCY5XPUP5RHR577S5NTNN3LR2WURHAK3SUE"
-  //     );
-  //   assert.isArray(
-  //     notifications,
-  //     "The local state is not fetched proporly. Either there is no notifications or notifications not fetched properly."
-  //   );
-  // });
+    assert.isNotNull(txns, "Not sending personal notifications");
+  });
 
-  it("Prepares checks optin state of address", async function () {
-    const optinState = await sdk.getoptinState(
+  it("Prepares receiving personal notification", async function () {
+    this.timeout(5000);
+    const notifications = await sdk
+      .notification()
+      .getPersonalNotification(
+        "SVCYFMQM6QER62RMPSVUHHIZXUIYHBXEZVGUPL6OVBRBNK7LNVGIRYMP3Y"
+      );
+    console.log(notifications)
+    assert.isArray(
+      notifications,
+      "Box storage. Either there is no notifications or notifications not fetched properly."
+    );
+  });
+
+  it("Prepares receiving counter", async function () {
+    const counter = await sdk.getCounter(
+      "3KOQUDTQAYKMXFL66Q5DS27FJJS6O3E2J3YMOC3WJRWNWJW3J4Q65POKPI"
+    );
+
+    assert.isNotEmpty(
+      counter,
+      "The local state is not fetched proporly. Either there is no counter."
+    );
+  });
+
+  it("Prepares checks optin state of address with notiboy SC", async function () {
+    const optinState = await sdk.getNotiboyOptinState(
       "HL65SEX7ERMP25UJQ4JZ6MNRCDSBILTVFDGZJXL4HYT4VUCXPJ2RQBJLMI"
     );
     assert.isNotNull(optinState, "Optin state not properly fetched.");
   });
+
+  it("Prepares checks optin state of address with channel SC", async function () {
+    const optinState = await sdk.getChannelScOptinState(
+      "HL65SEX7ERMP25UJQ4JZ6MNRCDSBILTVFDGZJXL4HYT4VUCXPJ2RQBJLMI",
+      151406743
+    );
+    assert.isNotNull(optinState, "Optin state not properly fetched.");
+  });
   
-  //Getting the list of opted in addresses to an app id
-  // it("Prepares testing", async function () {
-  //   const appId = 144113274;
-  //   const accountInfo = await indexer.searchAccounts().applicationID(appId).do();
-  //   console.log(accountInfo);
-  // });
+  it("Get list of addresses opted-in to a SC", async function () {
+    const addressList = await sdk.getOptinAddressList(
+      144113274
+    )
+    console.log(addressList)
+    assert.isArray(addressList, "List of addresses not properly fetched.");
+  });
+  
 });

@@ -3,7 +3,9 @@ import algosdk from "algosdk";
 import {
   NOTIBOY_APP_INDEX,
   DAPP_ESCROW,
-  CREATION_FEE,
+  CHANNEL_CREATION_FEE,
+  USER_BOX_CREATION_FEE,
+  ASA_ASSET,
   LOCAL_INTS,
   GLOBAL_INTS,
   LOCAL_BYTES,
@@ -11,13 +13,19 @@ import {
   APP_ARG_NULL,
   NOTIBOY_BOX_NAME,
   CHANNEL_NOOP_TXNS,
-  USER_NOOP_TXNS
+  USER_NOOP_TXNS,
+  MAX_MAIN_BOX_MSG_SIZE,
 } from "./constants";
 import RPC from "./rpc";
 import Notification from "./notifications";
 import Channel from "./channel";
+import { RegularChannel } from "./interfaces";
 
 export default class SDK extends RPC {
+  //Get notifications from a channel
+  notification() {
+    return new Notification(this.client, this.indexer);
+  }
   isValidAddress(address: string): boolean {
     return algosdk.isValidAddress(address);
   }
@@ -75,15 +83,16 @@ export default class SDK extends RPC {
     ];
 
     const params = await this.client.getTransactionParams().do();
-    params.flatFee = true;
 
     //channel creation fee
-    const paymentTxn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-      from: sender,
-      suggestedParams: params,
-      to: DAPP_ESCROW,
-      amount: CREATION_FEE,
-    });
+    const paymentTxn =
+      algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
+        from: sender,
+        assetIndex: ASA_ASSET,
+        suggestedParams: params,
+        to: DAPP_ESCROW,
+        amount: CHANNEL_CREATION_FEE,
+      });
 
     //Optin
     const optinTransaction = algosdk.makeApplicationOptInTxnFromObject({
@@ -91,8 +100,8 @@ export default class SDK extends RPC {
       suggestedParams: params,
       appIndex: NOTIBOY_APP_INDEX,
       appArgs: appArgs,
+      foreignAssets: [ASA_ASSET],
       foreignApps: [creatorAppIndex],
-      boxes: boxes,
     });
 
     //Noop Txns
@@ -131,7 +140,8 @@ export default class SDK extends RPC {
   async channelContractOptout(
     sender: string,
     creatorAppIndex: number,
-    channelName: string
+    channelName: string,
+    channelBoxIndex:number
   ): Promise<algosdk.Transaction[]> {
     const boxNameArray = this.convertToIntArray(NOTIBOY_BOX_NAME);
     const boxes = [
@@ -148,19 +158,18 @@ export default class SDK extends RPC {
     const appArgs = [
       this.convertToIntArray("dapp"),
       this.convertToIntArray(channelName),
+      algosdk.bigIntToBytes(channelBoxIndex,8)
     ];
 
     const params = await this.client.getTransactionParams().do();
-    params.flatFee = true;
 
     //closeOut
     const closeOutTransaction = algosdk.makeApplicationCloseOutTxnFromObject({
       from: sender,
-      appIndex: creatorAppIndex,
+      appIndex: NOTIBOY_APP_INDEX,
       suggestedParams: params,
       foreignApps: [creatorAppIndex],
       appArgs: appArgs,
-      boxes: boxes,
     });
 
     //Noop Txns
@@ -180,10 +189,8 @@ export default class SDK extends RPC {
   }
 
   //User opt-in to Notiboy SC
-  async userContractOptin(
-    sender: string
-  ): Promise<algosdk.Transaction[]> {
-    const boxNameArray = this.convertToIntArray(NOTIBOY_BOX_NAME);
+  async userContractOptin(sender: string): Promise<algosdk.Transaction[]> {
+    const boxNameArray = algosdk.decodeAddress(sender).publicKey;
     const boxes = [
       { appIndex: 0, name: boxNameArray },
       { appIndex: 0, name: boxNameArray },
@@ -195,12 +202,16 @@ export default class SDK extends RPC {
       { appIndex: 0, name: boxNameArray },
     ];
 
-    const appArgs = [
-      this.convertToIntArray("user")
-    ];
+    const appArgs = [this.convertToIntArray("user")];
 
     const params = await this.client.getTransactionParams().do();
-    params.flatFee = true;
+
+    const paymentTxn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+      from: sender,
+      suggestedParams: params,
+      to: algosdk.getApplicationAddress(NOTIBOY_APP_INDEX),
+      amount: USER_BOX_CREATION_FEE,
+    });
 
     //Optin
     const optinTransaction = algosdk.makeApplicationOptInTxnFromObject({
@@ -208,22 +219,11 @@ export default class SDK extends RPC {
       suggestedParams: params,
       appIndex: NOTIBOY_APP_INDEX,
       appArgs: appArgs,
-      foreignApps: [],
       boxes: boxes,
     });
 
-    //Noop Txns
-    const noopTxns = this.createNoopTransactions(
-      USER_NOOP_TXNS,
-      sender,
-      params,
-      NOTIBOY_APP_INDEX,
-      boxes,
-      []
-    );
     //Group Transactions
-    const basicTxns = [optinTransaction];
-    const groupTxns = basicTxns.concat(noopTxns);
+    const groupTxns = [paymentTxn, optinTransaction];
     algosdk.assignGroupID(groupTxns);
     return groupTxns;
   }
@@ -231,10 +231,9 @@ export default class SDK extends RPC {
   //User opt-in to a channel
   async userChannelOptin(
     sender: string,
-    channelAppIndex: number,
-  ): Promise<algosdk.Transaction>{
+    channelAppIndex: number
+  ): Promise<algosdk.Transaction> {
     const params = await this.client.getTransactionParams().do();
-    params.flatFee = true;
     const optinTransaction = algosdk.makeApplicationOptInTxnFromObject({
       from: sender,
       suggestedParams: params,
@@ -246,10 +245,9 @@ export default class SDK extends RPC {
   //User Opt-out of channel
   async userChannelOptout(
     sender: string,
-    channelAppIndex: number,
-  ): Promise<algosdk.Transaction>{
+    channelAppIndex: number
+  ): Promise<algosdk.Transaction> {
     const params = await this.client.getTransactionParams().do();
-    params.flatFee = true;
     const optOutTransaction = algosdk.makeApplicationCloseOutTxnFromObject({
       from: sender,
       suggestedParams: params,
@@ -258,52 +256,56 @@ export default class SDK extends RPC {
     return optOutTransaction;
   }
 
-  // Get list of public channels
-  async listPublicChannels(): Promise<any[]> {
-    const appInfo = await this.indexer.lookupApplications(NOTIBOY_APP_INDEX).do();
-    const channelDetails = [];
-    for (
-      let i = 0;
-      i < appInfo.application.params["global-state"].length;
-      i++
-    ) {
-      const key = Buffer.from(
-        appInfo.application.params["global-state"][i].key,
-        "base64"
-      ).toString("utf-8");
-      if (key === "Creator") continue;
-      const addressList = Buffer.from(
-        appInfo.application.params["global-state"][i].value.bytes,
-        "base64"
-      );
-      if (
-        addressList.length === 67 &&
-        addressList.slice(66).toString("utf-8") == "v"
-      ) {
-        channelDetails.push({
-          channelName: key,
-          dappAddress: algosdk.encodeAddress(addressList.slice(0, 32)),
-          lsigAddress: algosdk.encodeAddress(addressList.slice(33, 65)),
-          status: "verified",
-        });
-      } else if (addressList.length === 65) {
-        channelDetails.push({
-          channelName: key,
-          dappAddress: algosdk.encodeAddress(addressList.slice(0, 32)),
-          lsigAddress: algosdk.encodeAddress(addressList.slice(33, 65)),
-          status: "regular",
-        });
+  //Read channel list
+  async getChannelList() {
+    try {
+      const boxResponse = await this.client
+        .getApplicationBoxByName(
+          NOTIBOY_APP_INDEX,
+          this.convertToIntArray(NOTIBOY_BOX_NAME)
+        )
+        .do();
+      const value = boxResponse.value;
+      //Getting each channel details as chunk
+      let chunks: Uint8Array[] = [];
+      let channels: RegularChannel[] = [];
+
+      for (let i = 0; i < value.length; i += MAX_MAIN_BOX_MSG_SIZE) {
+        chunks.push(value.slice(i, i + MAX_MAIN_BOX_MSG_SIZE));
       }
+
+      for (let i = 0; i < chunks.length; i++) {
+        if (this.checkIsZeroValue(chunks[i])){
+          continue;
+        }
+        else {
+          const channel = this.parseMainBoxChunk(chunks[i], i);
+          channels.push(channel);
+        }
+      }
+      return channels;
+    } catch (error) {
+      return [];
     }
-    return channelDetails;
   }
 
-  //Get notifications from a channel
-  notification() {
-    return new Notification(this.client, this.indexer);
+  //Get counter
+  async getCounter(sender: string): Promise<number[]> {
+    try {
+      const localState = await this.indexer
+        .lookupAccountAppLocalStates(sender)
+        .applicationID(NOTIBOY_APP_INDEX)
+        .do();
+      if (localState["apps-local-states"] == undefined) return [0, 0];
+      const transactionDetails =
+        localState["apps-local-states"][0]["key-value"];
+      return this.readCounter(transactionDetails);
+    } catch (error) {
+      return [0, 0];
+    }
   }
 
-  async getoptinState(address: string): Promise<boolean> {
+  async getNotiboyOptinState(address: string): Promise<boolean> {
     const accountInfo = await this.indexer.lookupAccountByID(address).do();
     if (accountInfo["account"]["apps-local-state"] == undefined) return false;
     for (
@@ -311,10 +313,50 @@ export default class SDK extends RPC {
       i < accountInfo["account"]["apps-local-state"].length;
       i++
     ) {
-      if (accountInfo["account"]["apps-local-state"][i].id === NOTIBOY_APP_INDEX) {
+      if (
+        accountInfo["account"]["apps-local-state"][i].id === NOTIBOY_APP_INDEX
+      ) {
         return true;
       }
     }
     return false;
+  }
+
+  async getChannelScOptinState(address: string,
+    channelAppIndex: number): Promise<boolean> {
+    const accountInfo = await this.indexer.lookupAccountByID(address).do();
+    if (accountInfo["account"]["apps-local-state"] == undefined) return false;
+    for (
+      let i = 0;
+      i < accountInfo["account"]["apps-local-state"].length;
+      i++
+    ) {
+      if (
+        accountInfo["account"]["apps-local-state"][i].id === channelAppIndex
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  async getOptinAddressList(channelAppIndex:number):Promise<string[]>{
+    let nextToken= '';
+    let accountInfo;
+    let addressList = [];
+    //A do while loop to get full list of asset ids 
+    do{
+        if(nextToken == '') {
+            accountInfo = await this.indexer.searchAccounts().applicationID(channelAppIndex).do();
+            nextToken = accountInfo['next-token']
+            console.log("Next Token: ",nextToken)
+            for (let i = 0; i < accountInfo['accounts'].length; i++) addressList.push(accountInfo['accounts'][i].address);
+        } else{
+            accountInfo = await this.indexer.searchAccounts().applicationID(channelAppIndex).nextToken(nextToken).do();
+            nextToken = accountInfo['next-token']
+            for (let i = 0; i < accountInfo['accounts'].length; i++) addressList.push(accountInfo['accounts'][i].address);
+        }
+    } while (accountInfo['accounts'].length > 0)  
+  return addressList;
   }
 }

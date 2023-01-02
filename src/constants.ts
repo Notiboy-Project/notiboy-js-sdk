@@ -1,9 +1,11 @@
 //Constants for the sdk
-export const CREATION_FEE = 1000000;
+export const CHANNEL_CREATION_FEE = 25000000;
+export const USER_BOX_CREATION_FEE = 5000000;
+export const ASA_ASSET = 10458941;
 export const NOTIBOY_BOX_NAME = "notiboy";
 export const DAPP_ESCROW =
-  "3KOQUDTQAYKMXFL66Q5DS27FJJS6O3E2J3YMOC3WJRWNWJW3J4Q65POKPI";
-export const NOTIBOY_APP_INDEX = 144113274;
+  "PMJ44TV52KSPIP6RMTPCEPXTFWKGCNQ2YDTYXQYDXU2OG7CMHZXEAN4W2E";
+export const NOTIBOY_APP_INDEX = 151255921;
 export const ZERO_TXN = 0;
 export const APP_ARG_PUB = "pub_notify";
 export const APP_ARG_PVT = "pvt_notify";
@@ -16,3 +18,5 @@ export const APP_ARG_NULL = [];
 export const ACC_ARG_NULL = [];
 export const CHANNEL_NOOP_TXNS = 4;
 export const USER_NOOP_TXNS = 1;
+export const MAX_USER_BOX_MSG_SIZE = 296;
+export const MAX_MAIN_BOX_MSG_SIZE = 19;

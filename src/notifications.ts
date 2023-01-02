@@ -6,133 +6,121 @@ import {
   NOTIBOY_APP_INDEX,
   APP_ARG_PUB,
   APP_ARG_PVT,
-  USER_NOOP_TXNS 
+  MAX_USER_BOX_MSG_SIZE,
 } from "./constants";
 
-import { PublicNotification, PersonalNotification } from "./interfaces";
+import { PersonalNotification, PublicNotification } from "./interfaces";
 
 export default class Notification extends RPC {
   // Send Public Notification
   async sendPublicNotification(
     sender: string,
-    channelAppIndex:number,
+    channelAppIndex: number,
     notification: string
-  ): Promise<algosdk.Transaction>{
+  ): Promise<algosdk.Transaction> {
     const note = this.encodeString(notification);
-    const appArgs = [
-      this.encodeString(APP_ARG_PUB),
-    ];
-    const foreignApps = [channelAppIndex]
+    const appArgs = [this.encodeString(APP_ARG_PUB)];
+    const foreignApps = [channelAppIndex];
 
     const params = await this.client.getTransactionParams().do();
-    params.flatFee = true;
 
     const notificationTransaction = algosdk.makeApplicationNoOpTxnFromObject({
-      from:sender,
-      suggestedParams:params,
-      appIndex:NOTIBOY_APP_INDEX,
-      appArgs:appArgs,
-      foreignApps:foreignApps,
-      note:note
+      from: sender,
+      suggestedParams: params,
+      appIndex: NOTIBOY_APP_INDEX,
+      appArgs: appArgs,
+      foreignApps: foreignApps,
+      note: note,
     });
 
-    return notificationTransaction
+    return notificationTransaction;
   }
 
   // Send Personal Notification
   async sendPersonalNotification(
     sender: string,
     receiver: string,
-    channelAppIndex:number,
+    channelAppIndex: number,
     channelName: string,
-    notification: string,
-    globalStateIndex:number
-  ): Promise<algosdk.Transaction[]>{
+    notification: string
+  ): Promise<algosdk.Transaction> {
     const note = this.encodeString(notification);
 
-    const boxNameArray = this.convertToIntArray(channelName);
+    const boxNameArray = algosdk.decodeAddress(receiver).publicKey;
     let boxes = [
       { appIndex: 0, name: boxNameArray },
       { appIndex: 0, name: boxNameArray },
       { appIndex: 0, name: boxNameArray },
       { appIndex: 0, name: boxNameArray },
       { appIndex: 0, name: boxNameArray },
-      { appIndex: 0, name: boxNameArray }
+      { appIndex: 0, name: boxNameArray },
     ];
 
     const appArgs = [
       this.encodeString(APP_ARG_PVT),
-      this.encodeString(channelName),
-      algosdk.bigIntToBytes(globalStateIndex,8) //passing the index of the channel details stored in the notiboy box
+      this.encodeString(channelName)
     ];
 
     const foreignApps = [channelAppIndex];
     const accounts = [receiver];
 
     const params = await this.client.getTransactionParams().do();
-    params.flatFee = true;
 
     const notificationTransaction = algosdk.makeApplicationNoOpTxnFromObject({
-      from:sender,
-      suggestedParams:params,
-      appIndex:NOTIBOY_APP_INDEX,
-      appArgs:appArgs,
-      accounts:accounts,
-      foreignApps:foreignApps,
-      note:note,
-      boxes:boxes
+      from: sender,
+      suggestedParams: params,
+      appIndex: NOTIBOY_APP_INDEX,
+      appArgs: appArgs,
+      accounts: accounts,
+      foreignApps: foreignApps,
+      note: note,
+      boxes: boxes,
     });
 
-    boxes = [
-      { appIndex: 0, name: boxNameArray },
-      { appIndex: 0, name: boxNameArray },
-      { appIndex: 0, name: boxNameArray },
-      { appIndex: 0, name: boxNameArray },
-      { appIndex: 0, name: boxNameArray },
-      { appIndex: 0, name: boxNameArray },
-      { appIndex: 0, name: boxNameArray },
-      { appIndex: 0, name: boxNameArray }
-    ]; 
-
-    const noopTxns = this.createNoopTransactions(
-      USER_NOOP_TXNS,
-      sender,
-      params,
-      NOTIBOY_APP_INDEX,
-      boxes,
-      []
-    );
-
-    //Group Transactions
-    const basicTxns = [notificationTransaction];
-    const groupTxns = basicTxns.concat(noopTxns);
-    algosdk.assignGroupID(groupTxns);
-    return groupTxns;
+    return notificationTransaction;
   }
 
-  // Get Public notifications
-  async getPublicNotification(
-    sender: string,
-    channelAppIndex:number
-  ): Promise<PublicNotification[]> {
+  //Read Public notifications
+  async getPublicNotification(sender: string): Promise<PublicNotification[]> {
     try {
       const localState = await this.indexer
         .lookupAccountAppLocalStates(sender)
-        .applicationID(channelAppIndex)
+        .applicationID(NOTIBOY_APP_INDEX)
         .do();
       if (localState["apps-local-states"] == undefined) return [];
-      const transactionDetails = localState["apps-local-states"][0]["key-value"];
-      const transactionIds = this.getTransactionIds(transactionDetails);
-      const notifications = [];
-      for (let i = 0; i < transactionIds.length; i++) {
-        const txnId = transactionIds[i];
-        const txnInfo = await this.indexer.lookupTransactionByID(txnId).do();
-        const notification = {
-          notification: this.decodeNote(txnInfo.transaction.note),
-          timeStamp: txnInfo.transaction["round-time"],
-        };
-        //Getting the latest notification first(with higher index first)
-        notifications.unshift(notification);
+      const transactionDetails =
+        localState["apps-local-states"][0]["key-value"];
+      return this.getLocalState(transactionDetails);
+    } catch (error) {
+      return [];
+    }
+  }
+
+  //Read Personal Notifications
+  async getPersonalNotification(
+    sender: string
+  ): Promise<PersonalNotification[]> {
+    try {
+      const boxName = algosdk.decodeAddress(sender).publicKey;
+      const boxResponse = await this.client
+        .getApplicationBoxByName(NOTIBOY_APP_INDEX, Buffer.from(boxName))
+        .do();
+      const value = boxResponse.value;
+      let chunks: Uint8Array[] = [];
+      const notifications: PersonalNotification[] = [];
+      //splitting the box data into chunks
+      for (let i = 0; i < value.length; i += MAX_USER_BOX_MSG_SIZE) {
+        chunks.push(value.slice(i, i + MAX_USER_BOX_MSG_SIZE));
+      }
+      // Getting the chunk with notification details(the chunks without notifications will have only zeros)
+      for (let i = 0; i < chunks.length; i++) {
+        for (let j = 0; j < 8; j++) {
+          if (chunks[i][j] != 0) {
+            const notification = this.parseUserBoxChunk(chunks[i]);
+            notifications.push(notification);
+            break;
+          }
+        }
       }
       return notifications;
     } catch (error) {
