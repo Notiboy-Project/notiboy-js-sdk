@@ -256,7 +256,7 @@ export default class SDK extends RPC {
   }
 
   //Read channel list
-  async getChannelList() {
+  async getChannelList():Promise<RegularChannel[]> {
     try {
       const boxResponse = await this.client
         .getApplicationBoxByName(
