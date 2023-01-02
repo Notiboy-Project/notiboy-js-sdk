@@ -2,7 +2,7 @@
 export interface RegularChannel {
   channelName: string | number;
   appIndex: string | number;
-  channelIndex:number,
+  channelIndex: number;
   verificationStatus: string | number;
 }
 
