@@ -13,10 +13,10 @@ npm install notiboy-js-sdk
 ## Quick Start
 
 ```javascript
-import sdk from "notiboy-js-sdk";
-const client = new algosdk.Algodv2(token, server, port);
-const indexer = new algosdk.Indexer(token, server, port);
-const notiBoy = new sdk(client, indexer);
+import Notiboy from "../src/index.js";
+const client = new Algodv2("", "https://testnet-api.algonode.cloud", "");
+const indexer = new Indexer("", "https://testnet-idx.algonode.cloud", "");
+const notiboy = new Notiboy(client, indexer);
 ```
 
 ## SDK Development
@@ -38,7 +38,7 @@ npm run test
 ```
 
 #### Example
-Documentation with further explanation can be found in [Docs](https://notiboy-project.gitbook.io/notiboy-project/)
+Documentation with further explanation and examples can be found in [Docs](https://notiboy-project.gitbook.io/notiboy-project/)
 
 Example implementation of the SDK can be seen in this vue.js [webApp](https://github.com/Notiboy-Project/notiboy-webapp/blob/main/src/store/index.js)
 

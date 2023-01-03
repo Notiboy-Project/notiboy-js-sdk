@@ -1,22 +1,22 @@
 import { Algodv2, Indexer } from "algosdk";
 import { describe, it } from "mocha";
 import { assert } from "chai";
-import SDK from "../src/index.js";
+import Notiboy from "../src/index.js";
 
 const client = new Algodv2("", "https://testnet-api.algonode.cloud", "");
 const indexer = new Indexer("", "https://testnet-idx.algonode.cloud", "");
 
-const sdk = new SDK(client, indexer);
+const notiboy = new Notiboy(client, indexer);
 
 describe("Testing notiboy functions", function () {
   it("Prepares creation of channel", async function () {
     this.timeout(5000);
-    const txns = await sdk.createChannel("3KOQUDTQAYKMXFL66Q5DS27FJJS6O3E2J3YMOC3WJRWNWJW3J4Q65POKPI");
+    const txns = await notiboy.createChannel("3KOQUDTQAYKMXFL66Q5DS27FJJS6O3E2J3YMOC3WJRWNWJW3J4Q65POKPI");
     assert.isNotNull(txns, "Channel not created");
   });
 
   it("Prepares optout transactions from Notiboy SC for channel creator", async function () {
-    const txns = await sdk.channelContractOptout(
+    const txns = await notiboy.channelContractOptout(
       "3KOQUDTQAYKMXFL66Q5DS27FJJS6O3E2J3YMOC3WJRWNWJW3J4Q65POKPI",
       151406743,
       "MINT",
@@ -27,7 +27,7 @@ describe("Testing notiboy functions", function () {
   });
 
   it("Prepares optin transactions for channel creator", async function () {
-    const txns = await sdk.channelContractOptin(
+    const txns = await notiboy.channelContractOptin(
       "3KOQUDTQAYKMXFL66Q5DS27FJJS6O3E2J3YMOC3WJRWNWJW3J4Q65POKPI",
       151406743,
       "MINT"
@@ -37,7 +37,7 @@ describe("Testing notiboy functions", function () {
   });
 
   it("Prepares user opt-in to Notiboy sc", async function () {
-    const txns = await sdk.userContractOptin(
+    const txns = await notiboy.userContractOptin(
       "SVCYFMQM6QER62RMPSVUHHIZXUIYHBXEZVGUPL6OVBRBNK7LNVGIRYMP3Y",
     );
 
@@ -46,7 +46,7 @@ describe("Testing notiboy functions", function () {
   });
 
   it("Prepares check opt-out for end user to channel SC", async function () {
-    const txns = await sdk.userChannelOptout(
+    const txns = await notiboy.userChannelOptout(
       "SVCYFMQM6QER62RMPSVUHHIZXUIYHBXEZVGUPL6OVBRBNK7LNVGIRYMP3Y",
       151406743
     );
@@ -55,7 +55,7 @@ describe("Testing notiboy functions", function () {
   });
 
   it("Prepares check opt-in for end user to channel SC", async function () {
-    const txns = await sdk.userChannelOptin(
+    const txns = await notiboy.userChannelOptin(
       "SVCYFMQM6QER62RMPSVUHHIZXUIYHBXEZVGUPL6OVBRBNK7LNVGIRYMP3Y",
       151406743
     );
@@ -65,7 +65,7 @@ describe("Testing notiboy functions", function () {
 
   it("Prepares receiving list of public channels", async function () {
   this.timeout(5000)
-    const listPublicChannels = await sdk.getChannelList();
+    const listPublicChannels = await notiboy.getChannelList();
     assert.isNotNull(
       listPublicChannels,
       "The app id does not exist or the channel details are not fetched properly."
@@ -73,7 +73,7 @@ describe("Testing notiboy functions", function () {
   });
 
   it("Prepares sending public notifications", async function () {
-    const txns = await sdk
+    const txns = await notiboy
       .notification()
       .sendPublicNotification(
         "3KOQUDTQAYKMXFL66Q5DS27FJJS6O3E2J3YMOC3WJRWNWJW3J4Q65POKPI",
@@ -86,7 +86,7 @@ describe("Testing notiboy functions", function () {
 
   it("Prepares receiving Public Notifications", async function () {
     this.timeout(5000);
-    const notifications = await sdk
+    const notifications = await notiboy
       .notification()
       .getPublicNotification(
         "3KOQUDTQAYKMXFL66Q5DS27FJJS6O3E2J3YMOC3WJRWNWJW3J4Q65POKPI"
@@ -99,7 +99,7 @@ describe("Testing notiboy functions", function () {
   });
 
   it("Prepares sending personal notifications", async function () {
-    const txns = await sdk
+    const txns = await notiboy
       .notification()
       .sendPersonalNotification(
         "3KOQUDTQAYKMXFL66Q5DS27FJJS6O3E2J3YMOC3WJRWNWJW3J4Q65POKPI",
@@ -113,7 +113,7 @@ describe("Testing notiboy functions", function () {
 
   it("Prepares receiving personal notification", async function () {
     this.timeout(5000);
-    const notifications = await sdk
+    const notifications = await notiboy
       .notification()
       .getPersonalNotification(
         "SVCYFMQM6QER62RMPSVUHHIZXUIYHBXEZVGUPL6OVBRBNK7LNVGIRYMP3Y"
@@ -125,7 +125,7 @@ describe("Testing notiboy functions", function () {
   });
 
   it("Prepares receiving counter", async function () {
-    const counter = await sdk.getCounter(
+    const counter = await notiboy.getCounter(
       "3KOQUDTQAYKMXFL66Q5DS27FJJS6O3E2J3YMOC3WJRWNWJW3J4Q65POKPI"
     );
 
@@ -136,14 +136,14 @@ describe("Testing notiboy functions", function () {
   });
 
   it("Prepares checks optin state of address with notiboy SC", async function () {
-    const optinState = await sdk.getNotiboyOptinState(
+    const optinState = await notiboy.getNotiboyOptinState(
       "HL65SEX7ERMP25UJQ4JZ6MNRCDSBILTVFDGZJXL4HYT4VUCXPJ2RQBJLMI"
     );
     assert.isNotNull(optinState, "Optin state not properly fetched.");
   });
 
   it("Prepares checks optin state of address with channel SC", async function () {
-    const optinState = await sdk.getChannelScOptinState(
+    const optinState = await notiboy.getChannelScOptinState(
       "HL65SEX7ERMP25UJQ4JZ6MNRCDSBILTVFDGZJXL4HYT4VUCXPJ2RQBJLMI",
       151406743
     );
@@ -151,7 +151,7 @@ describe("Testing notiboy functions", function () {
   });
   
   it("Get list of addresses opted-in to a SC", async function () {
-    const addressList = await sdk.getOptinAddressList(
+    const addressList = await notiboy.getOptinAddressList(
       144113274
     )
     assert.isArray(addressList, "List of addresses not properly fetched.");
