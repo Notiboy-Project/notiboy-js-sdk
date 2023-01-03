@@ -1,4 +1,4 @@
 //Main File
-import sdk from "./sdk.js";
+import Notiboy from "./sdk.js";
 
-export default sdk;
+export default Notiboy;
