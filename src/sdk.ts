@@ -287,7 +287,7 @@ export default class SDK extends RPC {
     }
   }
 
-  //Get counter
+  //Get counter for personal and public notification
   async getCounter(sender: string): Promise<counter> {
     try {
       const localState = await this.indexer
@@ -303,7 +303,7 @@ export default class SDK extends RPC {
       return { personalNotification: 0, publicNotification: 0 };
     }
   }
-
+  //Get opt-in state of an address to notiboy SC
   async getNotiboyOptinState(address: string): Promise<boolean> {
     const accountInfo = await this.indexer.lookupAccountByID(address).do();
     if (accountInfo["account"]["apps-local-state"] == undefined) return false;
@@ -320,7 +320,7 @@ export default class SDK extends RPC {
     }
     return false;
   }
-
+  //Get opt-in state of an address to channel SC
   async getChannelScOptinState(
     address: string,
     channelAppIndex: number
@@ -340,7 +340,7 @@ export default class SDK extends RPC {
     }
     return false;
   }
-
+  //Get opt-in address list
   async getOptinAddressList(channelAppIndex: number): Promise<string[]> {
     let nextToken = "";
     let accountInfo;

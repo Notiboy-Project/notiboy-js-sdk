@@ -100,7 +100,7 @@ export default class RPC {
     }
     return publicNotifications;
   }
-
+  //Reading counter from local state
   readCounter(transactionDetails: Array<any>): counter {
     let counter = { personalNotification: 0, publicNotification: 0 };
     for (let j = 0; j < transactionDetails.length; j++) {
@@ -118,7 +118,7 @@ export default class RPC {
     }
     return counter;
   }
-
+  //Check if the chunk is zero in main box
   checkIsZeroValue(byteData: Uint8Array): boolean {
     const data = this.convertToString(byteData);
     const check = data.replace(/^0+/, "").replace(/0+$/, "").trim();
@@ -128,7 +128,7 @@ export default class RPC {
       return false;
     }
   }
-
+  //Parse each chunk in main box
   parseMainBoxChunk(chunk: Uint8Array, index: number) {
     const chunkItems = [
       this.convertToString(chunk.slice(0, 10)).replace(/^:+/, ""),
@@ -142,7 +142,7 @@ export default class RPC {
       verificationStatus: chunkItems[2],
     };
   }
-
+  //parse each chunk in user box
   parseUserBoxChunk(chunk: Uint8Array) {
     const chunkItems = [
       Number(algosdk.bytesToBigInt(chunk.slice(0, 8))),
