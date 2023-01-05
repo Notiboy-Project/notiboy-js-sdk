@@ -6,10 +6,11 @@ export const USER_BOX_CREATION_FEE = 5000000;
 export const ASA_ASSET = 10458941;
 //Notiboy main box name and SC app id
 export const NOTIBOY_BOX_NAME = "notiboy";
-export const NOTIBOY_APP_INDEX = 15125592;
+export const NOTIBOY_APP_INDEX = 151255921;
 // Escrow account
 export const DAPP_ESCROW =
-  "PMJ44TV52KSPIP6RMTPCEPXTFWKGCNQ2YDTYXQYDXU2OG7CMHZXEAN4W2E";1;
+  "PMJ44TV52KSPIP6RMTPCEPXTFWKGCNQ2YDTYXQYDXU2OG7CMHZXEAN4W2E";
+1;
 export const ZERO_TXN = 0;
 export const APP_ARG_PUB = "pub_notify";
 export const APP_ARG_PVT = "pvt_notify";
@@ -21,7 +22,7 @@ export const GLOBAL_BYTES = 64;
 export const APP_ARG_CHANNEL_CREATE = [];
 export const APP_ARG_NULL = [];
 export const ACC_ARG_NULL = [];
-// No-op transactions 
+// No-op transactions
 export const CHANNEL_NOOP_TXNS = 4;
 export const USER_NOOP_TXNS = 1;
 //Length limit for user box and main box

@@ -13,6 +13,7 @@ npm install notiboy-js-sdk
 ## Quick Start
 
 ```javascript
+import algosdk from "algosdk";
 import Notiboy from "notiboy-js-sdk";
 const client = new Algodv2("", "https://testnet-api.algonode.cloud", "");
 const indexer = new Indexer("", "https://testnet-idx.algonode.cloud", "");

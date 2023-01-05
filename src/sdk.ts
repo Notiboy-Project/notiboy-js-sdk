@@ -256,7 +256,7 @@ export default class SDK extends RPC {
   }
 
   //Read channel list
-  async getChannelList():Promise<RegularChannel[]> {
+  async getChannelList(): Promise<RegularChannel[]> {
     try {
       const boxResponse = await this.client
         .getApplicationBoxByName(
@@ -301,6 +301,21 @@ export default class SDK extends RPC {
       return this.readCounter(transactionDetails);
     } catch (error) {
       return { personalNotification: 0, publicNotification: 0 };
+    }
+  }
+  //Get channel smart contract appIndex related to an address from address local state
+  async getAddressAppIndex(sender: string): Promise<number> {
+    try {
+      const localState = await this.indexer
+        .lookupAccountAppLocalStates(sender)
+        .applicationID(NOTIBOY_APP_INDEX)
+        .do();
+      if (localState["apps-local-states"] == undefined) return 0;
+      const transactionDetails =
+        localState["apps-local-states"][0]["key-value"];
+      return this.readAppIndex(transactionDetails);
+    } catch (error) {
+      return 0;
     }
   }
   //Get opt-in state of an address to notiboy SC

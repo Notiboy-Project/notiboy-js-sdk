@@ -118,6 +118,20 @@ export default class RPC {
     }
     return counter;
   }
+  //Reading the app index related to an address(check if the address is creator or not)
+  readAppIndex(transactionDetails: Array<any>): number {
+    let appIndex = 0;
+    for (let j = 0; j < transactionDetails.length; j++) {
+      // converting key into array buffer
+      const finalKey = this.decodeNote(transactionDetails[j].key);
+      if (finalKey == "whoami") {
+        const chunk = Buffer.from(transactionDetails[j].value.bytes, "base64");
+        appIndex = Number(algosdk.bytesToBigInt(chunk.slice(10, 18)));
+        return appIndex;
+      }
+    }
+    return appIndex;
+  }
   //Check if the chunk is zero in main box
   checkIsZeroValue(byteData: Uint8Array): boolean {
     const data = this.convertToString(byteData);
