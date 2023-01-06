@@ -164,9 +164,9 @@ export default class RPC {
       this.convertToString(chunk.slice(16)).replace(/0+$/, ""),
     ];
     return {
-      appIndex: chunkItems[0],
+      appIndex: chunkItems[1],
       notification: chunkItems[2],
-      timeStamp: chunkItems[1],
+      timeStamp: chunkItems[0],
     };
   }
 }
