@@ -87,7 +87,7 @@ export default class RPC {
         continue;
       } else {
         // other key values are converted into number
-        finalKey = algosdk.decodeUint64(bufferKey, "mixed");
+        finalKey = Number(algosdk.bytesToBigInt(bufferKey));
         const publicNotification = this.decodeNote(
           transactionDetails[j].value.bytes
         );
@@ -95,7 +95,7 @@ export default class RPC {
           index: finalKey,
           notification: publicNotification,
         };
-        publicNotifications.unshift(PublicNotification);
+        publicNotifications.push(PublicNotification);
       }
     }
     return publicNotifications;
