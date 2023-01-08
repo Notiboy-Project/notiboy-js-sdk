@@ -10,7 +10,6 @@ export const NOTIBOY_APP_INDEX = 151255921;
 // Escrow account
 export const DAPP_ESCROW =
   "PMJ44TV52KSPIP6RMTPCEPXTFWKGCNQ2YDTYXQYDXU2OG7CMHZXEAN4W2E";
-1;
 export const ZERO_TXN = 0;
 export const APP_ARG_PUB = "pub_notify";
 export const APP_ARG_PVT = "pvt_notify";

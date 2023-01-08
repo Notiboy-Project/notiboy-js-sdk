@@ -208,7 +208,7 @@ export default class SDK extends RPC {
     const paymentTxn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
       from: sender,
       suggestedParams: params,
-      to: algosdk.getApplicationAddress(NOTIBOY_APP_INDEX),
+      to: DAPP_ESCROW,
       amount: USER_BOX_CREATION_FEE,
     });
 
