@@ -3,6 +3,7 @@ import algosdk from "algosdk";
 import {
   NOTIBOY_APP_INDEX,
   DAPP_ESCROW,
+  NOTIBOY_SC_ADDR,
   CHANNEL_CREATION_FEE,
   USER_BOX_CREATION_FEE,
   ASA_ASSET,
@@ -208,7 +209,7 @@ export default class SDK extends RPC {
     const paymentTxn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
       from: sender,
       suggestedParams: params,
-      to: DAPP_ESCROW,
+      to: NOTIBOY_SC_ADDR,
       amount: USER_BOX_CREATION_FEE,
     });
 

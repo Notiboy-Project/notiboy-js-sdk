@@ -81,11 +81,15 @@ export default class Notification extends RPC {
   }
 
   //Read Public notifications
-  async getPublicNotification(channelAppIndex: number,): Promise<PublicNotification[]> {
+  async getPublicNotification(
+    channelAppIndex: number
+  ): Promise<PublicNotification[]> {
     try {
-      const appInfo = await this.indexer.lookupApplications(channelAppIndex).do();
+      const appInfo = await this.indexer
+        .lookupApplications(channelAppIndex)
+        .do();
       const localState = await this.indexer
-        .lookupAccountAppLocalStates(appInfo['application']['params'].creator)
+        .lookupAccountAppLocalStates(appInfo["application"]["params"].creator)
         .applicationID(NOTIBOY_APP_INDEX)
         .do();
       if (localState["apps-local-states"] == undefined) return [];
