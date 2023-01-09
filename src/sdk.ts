@@ -321,67 +321,79 @@ export default class SDK extends RPC {
   }
   //Get opt-in state of an address to notiboy SC
   async getNotiboyOptinState(address: string): Promise<boolean> {
-    const accountInfo = await this.indexer.lookupAccountByID(address).do();
-    if (accountInfo["account"]["apps-local-state"] == undefined) return false;
-    for (
-      let i = 0;
-      i < accountInfo["account"]["apps-local-state"].length;
-      i++
-    ) {
-      if (
-        accountInfo["account"]["apps-local-state"][i].id === NOTIBOY_APP_INDEX
+    try {
+      const accountInfo = await this.indexer.lookupAccountByID(address).do();
+      if (accountInfo["account"]["apps-local-state"] == undefined) return false;
+      for (
+        let i = 0;
+        i < accountInfo["account"]["apps-local-state"].length;
+        i++
       ) {
-        return true;
+        if (
+          accountInfo["account"]["apps-local-state"][i].id === NOTIBOY_APP_INDEX
+        ) {
+          return true;
+        }
       }
+      return false;
+    } catch (error) {
+      return false;
     }
-    return false;
   }
   //Get opt-in state of an address to channel SC
   async getChannelScOptinState(
     address: string,
     channelAppIndex: number
   ): Promise<boolean> {
-    const accountInfo = await this.indexer.lookupAccountByID(address).do();
-    if (accountInfo["account"]["apps-local-state"] == undefined) return false;
-    for (
-      let i = 0;
-      i < accountInfo["account"]["apps-local-state"].length;
-      i++
-    ) {
-      if (
-        accountInfo["account"]["apps-local-state"][i].id === channelAppIndex
+    try {
+      const accountInfo = await this.indexer.lookupAccountByID(address).do();
+      if (accountInfo["account"]["apps-local-state"] == undefined) return false;
+      for (
+        let i = 0;
+        i < accountInfo["account"]["apps-local-state"].length;
+        i++
       ) {
-        return true;
+        if (
+          accountInfo["account"]["apps-local-state"][i].id === channelAppIndex
+        ) {
+          return true;
+        }
       }
+      return false;
+    } catch (error) {
+      return false
     }
-    return false;
   }
   //Get opt-in address list
   async getOptinAddressList(channelAppIndex: number): Promise<string[]> {
-    let nextToken = "";
-    let accountInfo;
-    const addressList = [];
-    //A do while loop to get full list of asset ids
-    do {
-      if (nextToken == "") {
-        accountInfo = await this.indexer
-          .searchAccounts()
-          .applicationID(channelAppIndex)
-          .do();
-        nextToken = accountInfo["next-token"];
-        for (let i = 0; i < accountInfo["accounts"].length; i++)
-          addressList.push(accountInfo["accounts"][i].address);
-      } else {
-        accountInfo = await this.indexer
-          .searchAccounts()
-          .applicationID(channelAppIndex)
-          .nextToken(nextToken)
-          .do();
-        nextToken = accountInfo["next-token"];
-        for (let i = 0; i < accountInfo["accounts"].length; i++)
-          addressList.push(accountInfo["accounts"][i].address);
-      }
-    } while (accountInfo["accounts"].length > 0);
-    return addressList;
+    try {
+      let nextToken = "";
+      let accountInfo;
+      const addressList = [];
+      //A do while loop to get full list of asset ids
+      do {
+        if (nextToken == "") {
+          accountInfo = await this.indexer
+            .searchAccounts()
+            .applicationID(channelAppIndex)
+            .do();
+          nextToken = accountInfo["next-token"];
+          for (let i = 0; i < accountInfo["accounts"].length; i++)
+            addressList.push(accountInfo["accounts"][i].address);
+        } else {
+          accountInfo = await this.indexer
+            .searchAccounts()
+            .applicationID(channelAppIndex)
+            .nextToken(nextToken)
+            .do();
+          nextToken = accountInfo["next-token"];
+          for (let i = 0; i < accountInfo["accounts"].length; i++)
+            addressList.push(accountInfo["accounts"][i].address);
+        }
+      } while (accountInfo["accounts"].length > 0);
+      return addressList;
+    } catch (error) {
+      return ["0"];
+    }
   }
 }
