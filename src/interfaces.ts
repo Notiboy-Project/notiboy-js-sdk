@@ -21,3 +21,8 @@ export interface counter {
   personalNotification: number;
   publicNotification: number;
 }
+//channel app Index
+export interface channeIndex {
+  channelAppIndex: number;
+  channelName: string;
+}

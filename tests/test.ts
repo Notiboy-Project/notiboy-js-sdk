@@ -157,9 +157,9 @@ describe("Testing notiboy functions", function () {
 
   it("Get app index of a channel from local state of address", async function () {
     const appIndex = await notiboy.getAddressAppIndex(
-      "AAVUPELO5ZCBDA3DD3G7ZDZ64BSEOOE3G7ZBOMR7DKI3YIBXLYEC3EATQA"
+      "3KOQUDTQAYKMXFL66Q5DS27FJJS6O3E2J3YMOC3WJRWNWJW3J4Q65POKPI"
     )
-    assert.isNumber(appIndex, "AppIndex not fetched properly from local state.");
+    assert.isObject(appIndex, "AppIndex not fetched properly from local state.");
   });
   
 });

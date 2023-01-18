@@ -19,7 +19,7 @@ import {
 import RPC from "./rpc";
 import Notification from "./notifications";
 import Channel from "./channel";
-import { counter, RegularChannel } from "./interfaces";
+import { counter, RegularChannel, channeIndex } from "./interfaces";
 
 export default class SDK extends RPC {
   //Get notifications from a channel
@@ -77,9 +77,10 @@ export default class SDK extends RPC {
       { appIndex: 0, name: boxNameArray },
     ];
 
+    if (this.encodeString(channelName).length > 10) throw Error;
     const appArgs = [
       this.convertToIntArray("dapp"),
-      this.convertToIntArray(channelName),
+      this.encodeString(channelName),
     ];
 
     const params = await this.client.getTransactionParams().do();
@@ -157,7 +158,7 @@ export default class SDK extends RPC {
 
     const appArgs = [
       this.convertToIntArray("dapp"),
-      this.convertToIntArray(channelName),
+      this.encodeString(channelName),
       algosdk.bigIntToBytes(channelBoxIndex, 8),
     ];
 
@@ -273,7 +274,6 @@ export default class SDK extends RPC {
       for (let i = 0; i < value.length; i += MAX_MAIN_BOX_MSG_SIZE) {
         chunks.push(value.slice(i, i + MAX_MAIN_BOX_MSG_SIZE));
       }
-
       for (let i = 0; i < chunks.length; i++) {
         if (this.checkIsZeroValue(chunks[i])) {
           continue;
@@ -305,18 +305,25 @@ export default class SDK extends RPC {
     }
   }
   //Get channel smart contract appIndex related to an address from address local state
-  async getAddressAppIndex(sender: string): Promise<number> {
+  async getAddressAppIndex(sender: string): Promise<channeIndex> {
     try {
       const localState = await this.indexer
         .lookupAccountAppLocalStates(sender)
         .applicationID(NOTIBOY_APP_INDEX)
         .do();
-      if (localState["apps-local-states"] == undefined) return 0;
+      if (localState["apps-local-states"] == undefined)
+        return {
+          channelAppIndex: 0,
+          channelName: "Null",
+        };
       const transactionDetails =
         localState["apps-local-states"][0]["key-value"];
       return this.readAppIndex(transactionDetails);
     } catch (error) {
-      return 0;
+      return {
+        channelAppIndex: 0,
+        channelName: "Null",
+      };
     }
   }
   //Get opt-in state of an address to notiboy SC
@@ -361,7 +368,7 @@ export default class SDK extends RPC {
       }
       return false;
     } catch (error) {
-      return false
+      return false;
     }
   }
   //Get opt-in address list

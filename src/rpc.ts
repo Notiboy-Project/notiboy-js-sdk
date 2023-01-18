@@ -1,7 +1,7 @@
 //Defined basic RPC methods
 import algosdk from "algosdk";
 import * as base32 from "hi-base32";
-import { PublicNotification, counter } from "./interfaces";
+import { PublicNotification, counter, channeIndex } from "./interfaces";
 export default class RPC {
   protected client: algosdk.Algodv2;
   protected indexer: algosdk.Indexer;
@@ -16,7 +16,7 @@ export default class RPC {
   }
 
   convertToString(arg: Uint8Array): string {
-    return new TextDecoder().decode(arg);
+    return new TextDecoder("utf-8").decode(arg);
   }
 
   convertToArrayBuffer(arg: string): any {
@@ -30,7 +30,7 @@ export default class RPC {
   }
 
   encodeString(arg: string): Uint8Array {
-    return new Uint8Array(Buffer.from(arg, "utf8"));
+    return new Uint8Array(Buffer.from(arg, "utf-8"));
   }
 
   base32EncodeArrayBuffer(arg: string): string {
@@ -119,14 +119,24 @@ export default class RPC {
     return counter;
   }
   //Reading the app index related to an address(check if the address is creator or not)
-  readAppIndex(transactionDetails: Array<any>): number {
-    let appIndex = 0;
+  readAppIndex(transactionDetails: Array<any>): channeIndex {
+    const appIndex = {
+      channelAppIndex: 0,
+      channelName: "Null",
+    };
     for (let j = 0; j < transactionDetails.length; j++) {
       // converting key into array buffer
       const finalKey = this.decodeNote(transactionDetails[j].key);
       if (finalKey == "whoami") {
         const chunk = Buffer.from(transactionDetails[j].value.bytes, "base64");
-        appIndex = Number(algosdk.bytesToBigInt(chunk.slice(10, 18)));
+        appIndex.channelAppIndex = Number(
+          algosdk.bytesToBigInt(chunk.slice(10, 18))
+        );
+        appIndex.channelName = this.decodeNote(
+          transactionDetails[j].value.bytes
+        )
+          .slice(0, 10)
+          .replace(/^:+/, "");
         return appIndex;
       }
     }

@@ -19,6 +19,7 @@ export default class Notification extends RPC {
     notification: string
   ): Promise<algosdk.Transaction> {
     const note = this.encodeString(notification);
+    if (note.length > 180) throw Error;
     const appArgs = [this.encodeString(APP_ARG_PUB)];
     const foreignApps = [channelAppIndex];
 
@@ -45,7 +46,7 @@ export default class Notification extends RPC {
     notification: string
   ): Promise<algosdk.Transaction> {
     const note = this.encodeString(notification);
-
+    if (note.length > 280) throw Error;
     const boxNameArray = algosdk.decodeAddress(receiver).publicKey;
     const boxes = [
       { appIndex: 0, name: boxNameArray },
