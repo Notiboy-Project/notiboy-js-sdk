@@ -3,8 +3,8 @@ import { describe, it } from "mocha";
 import { assert } from "chai";
 import Notiboy from "../src/index.js";
 
-const client = new Algodv2("", "https://testnet-api.algonode.cloud", "");
-const indexer = new Indexer("", "https://testnet-idx.algonode.cloud", "");
+const client = new Algodv2("", "https://mainnet-api.algonode.cloud", "");
+const indexer = new Indexer("", "https://mainnet-idx.algonode.cloud", "");
 
 const notiboy = new Notiboy(client, indexer);
 
