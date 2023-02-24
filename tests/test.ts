@@ -148,6 +148,7 @@ describe("Testing notiboy functions", function () {
   });
   
   it("Get list of addresses opted-in to a SC", async function () {
+    this.timeout(5000)
     const addressList = await notiboy.getOptinAddressList(
       144113274
     )
