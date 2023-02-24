@@ -10,7 +10,7 @@
   "author": "Notiboy",
   "license": "MIT",
   "files": [
-    "/dist"
+    "dist/"
   ],
   "scripts": {
     "test": "tsc tests/test.ts & mocha tests/test.js",
