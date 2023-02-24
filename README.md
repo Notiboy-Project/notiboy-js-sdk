@@ -9,14 +9,27 @@ The official JavaScript library for sending, receiving and storing on-chain noti
 ```
 npm install notiboy-js-sdk
 ```
+## Import
 
-## Quick Start
+**`ESM`** import
 
 ```javascript
 import algosdk from "algosdk";
 import Notiboy from "notiboy-js-sdk";
-const client = new Algodv2("", "https://testnet-api.algonode.cloud", "");
-const indexer = new Indexer("", "https://testnet-idx.algonode.cloud", "");
+```
+
+**`CJS`** require
+
+```javascript
+const algosdk = require('algosdk');
+const Notiboy = require('notiboy-js-sdk').default;
+```
+
+## Quick Start
+
+```javascript
+const client = new algosdk.Algodv2("", "https://mainnet-api.algonode.cloud", "");
+const indexer = new algosdk.Indexer("", "https://mainnet-idx.algonode.cloud", "");
 const notiboy = new Notiboy(client, indexer);
 ```
 
