@@ -13,7 +13,7 @@
     "dist/"
   ],
   "scripts": {
-    "test": "tsc tests/test.ts & mocha tests/test.js",
+    "test": "tsc tests/test.cts & mocha tests/test.cjs",
     "format": "prettier --write src/.",
     "lint": "eslint . --ext .ts",
     "build": "npx tsup && npx tsc"

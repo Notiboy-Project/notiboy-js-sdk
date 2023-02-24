@@ -1,7 +1,7 @@
 import { Algodv2, Indexer } from "algosdk";
 import { describe, it } from "mocha";
 import { assert } from "chai";
-import Notiboy from "../src/index.js";
+import Notiboy from "../dist/index.cjs";
 
 const client = new Algodv2("", "https://mainnet-api.algonode.cloud", "");
 const indexer = new Indexer("", "https://mainnet-idx.algonode.cloud", "");
