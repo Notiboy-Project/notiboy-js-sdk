@@ -4,6 +4,7 @@
   "description": "JS SDK for Notiboy Notifications",
   "main": "dist/index.cjs",
   "module": "dist/esm/index.js",
+  "type": "module",
   "types": "dist/esm",
   "repository": "git@github.com:Notiboy-Project/notiboy-js-sdk.git",
   "author": "Notiboy",
